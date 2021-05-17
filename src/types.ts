@@ -15,15 +15,17 @@ export interface ContainerStats {
 };
 
 export interface ResourceRequest {
-  since: Date,
-  till: Date|null,
+  since: string,
+  till: string|null,
   memory_limit_mi: number|null;
   cpu_request_m: number|null;
 };
 
 export interface ResourceUsage {
-  measured_at: Date,
+  measured_at: string,
   memory_mi: number,
   cpu_m: number,
   cpu_m_seconds: number,
 };
+
+export type D3GElement = d3.Selection<SVGGElement, unknown, null, undefined>;
