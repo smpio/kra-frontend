@@ -2,6 +2,7 @@ import {ContainerStats} from 'types';
 import {useD3} from 'hooks';
 import * as d3 from 'd3';
 import ExampleBarChart from './ExampleBarChart';
+import ExampleLineChart from './ExampleLineChart';
 
 interface ContainerCardProps {
   name: string;
@@ -13,6 +14,8 @@ export default function ContainerCard(props: ContainerCardProps) {
     <div>
       <h3>{props.name}</h3>
       <ExampleBarChart />
+      <hr />
+      <ExampleLineChart />
     </div>
   );
 }
