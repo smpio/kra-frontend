@@ -1,9 +1,8 @@
 import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
-import ExampleBarChart from './ExampleBarChart';
-import ExampleLineChart from './ExampleLineChart';
 import styles from './ContainerCard.module.css';
+import * as math from 'math';
 
 interface ContainerCardProps {
   name: string;
@@ -68,14 +67,21 @@ export default function ContainerCard(props: ContainerCardProps) {
       .attr('d', line);
   }, [props.stats]);
 
+  let memMin = math.min(props.stats.usage.map(u => u.memory_mi));
+  let memMax = math.max(props.stats.usage.map(u => u.memory_mi));
+  let memMean = math.mean(props.stats.usage.map(u => u.memory_mi));
+  let memStdDev = math.stdDev(props.stats.usage.map(u => u.memory_mi));
+  let memStdDevPercent = memStdDev / memMean * 100;
+
   return (
     <div>
       <h3>{props.name}</h3>
+      <div>
+        Memory min: {memMin} Mi<br/>
+        Memory max: {memMax} Mi<br/>
+        Memory stdDev: {memStdDev.toFixed(0)} Mi ({memStdDevPercent.toFixed(2)}%)<br/>
+      </div>
       <svg ref={ref} className={styles.chart} />
-      <hr />
-      <ExampleBarChart />
-      <hr />
-      <ExampleLineChart />
     </div>
   );
 }
