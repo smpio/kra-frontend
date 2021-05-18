@@ -24,7 +24,6 @@ export interface ResourceRequest {
 export interface ResourceUsage {
   measured_at: string,
   memory_mi: number,
-  cpu_m: number,
   cpu_m_seconds: number,
 };
 
