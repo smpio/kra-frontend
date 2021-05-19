@@ -26,7 +26,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   return (
     <div ref={ref} className={styles.card}>
       <h2>
-        {props.workload.kind} {props.workload.namespace}/{props.workload.name}
+        <code>{props.workload.kind} {props.workload.namespace}/{props.workload.name}</code>
         {' '}<span className={styles.id}>{props.workload.id}</span>
       </h2>
       {stats && Object.entries(stats).map(([containerName, containerStats]) => (

@@ -49,7 +49,7 @@ export default function ContainerCard(props: ContainerCardProps) {
 
   return (
     <div>
-      <h3>{props.name}</h3>
+      <h3><code>{props.name}</code></h3>
       <div className={styles.row}>
         <MemoryChart stats={props.stats} className={styles.chart} />
         <CPUChart stats={props.stats} className={styles.chart} />
