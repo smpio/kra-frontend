@@ -10,32 +10,40 @@ interface ContainerCardProps {
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
-  let stats = null;
-  if (props.stats.usage.length > 0) {
-    stats = {
-      memMin: math.min(props.stats.usage.map(u => u.memory_mi)),
-      memMax: math.max(props.stats.usage.map(u => u.memory_mi)),
-      memMean: math.mean(props.stats.usage.map(u => u.memory_mi)),
-      memStdDev: math.stdDev(props.stats.usage.map(u => u.memory_mi)),
-      memStdDevPercent: 0,
-      memLimit: null as number|null,
+  let usage = props.stats.usage;
+  let mem = null;
+  let cpu = null;
 
-      cpuMin: math.min(props.stats.usage.map(u => u.cpu_m)),
-      cpuMax: math.max(props.stats.usage.map(u => u.cpu_m)),
-      cpuMean: math.mean(props.stats.usage.map(u => u.cpu_m).filter(cpuM => !isNaN(cpuM))),
-      cpuStdDev: math.stdDev(props.stats.usage.map(u => u.cpu_m).filter(cpuM => !isNaN(cpuM))),
-      cpuStdDevPercent: 0,
-      cpuRequest: null as number|null,
+  if (usage.length > 0) {
+    mem = {
+      min: math.min(usage.map(u => u.memory_mi)),
+      max: math.max(usage.map(u => u.memory_mi)),
+      mean: math.mean(usage.map(u => u.memory_mi)),
+      stdDev: math.stdDev(usage.map(u => u.memory_mi)),
+      stdDevPercent: 0,
+      limit: null as number|null,
     };
 
-    stats.memStdDevPercent = stats.memStdDev / stats.memMean * 100;
+    mem.stdDevPercent = mem.stdDev / mem.mean * 100;
     if (props.stats.requests.length > 0) {
-      stats.memLimit = props.stats.requests[props.stats.requests.length-1].memory_limit_mi;
+      mem.limit = props.stats.requests[props.stats.requests.length-1].memory_limit_mi;
     }
 
-    stats.cpuStdDevPercent = stats.cpuStdDev / stats.cpuMean * 100;
-    if (props.stats.requests.length > 0) {
-      stats.cpuRequest = props.stats.requests[props.stats.requests.length-1].cpu_request_m;
+    let noNaN = props.stats.usage.filter(u => !isNaN(u.cpu_m));
+    if (noNaN.length > 0) {
+      cpu = {
+        min: math.min(noNaN.map(u => u.cpu_m)),
+        max: math.max(noNaN.map(u => u.cpu_m)),
+        mean: math.mean(noNaN.map(u => u.cpu_m)),
+        stdDev: math.stdDev(noNaN.map(u => u.cpu_m)),
+        stdDevPercent: 0,
+        request: null as number|null,
+      };
+
+      cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
+      if (props.stats.requests.length > 0) {
+        cpu.request = props.stats.requests[props.stats.requests.length-1].cpu_request_m;
+      }
     }
   }
 
@@ -46,18 +54,24 @@ export default function ContainerCard(props: ContainerCardProps) {
         <MemoryChart stats={props.stats} className={styles.chart} />
         <CPUChart stats={props.stats} className={styles.chart} />
       </div>
-      {stats && (
-        <div className={styles.row}>
-          <div>
-            {stats.memMin}–{stats.memMax} Mi / <span className={styles.limit}>{stats.memLimit}</span> Mi,
-            stdDev: {stats.memStdDev.toFixed(0)} Mi ({stats.memStdDevPercent.toFixed(2)}%)<br/>
-          </div>
-          <div>
-            {stats.cpuMin.toFixed(0)}–{stats.cpuMax.toFixed(0)} m / <span className={styles.limit}>{stats.cpuRequest}</span> m,
-            stdDev: {stats.cpuStdDev.toFixed(0)} m ({stats.cpuStdDevPercent.toFixed(2)}%)<br/>
-          </div>
+      <div className={styles.row}>
+        <div>
+          {mem && (
+            <div>
+              {mem.min}–{mem.max} {mem.limit && <span className={styles.limit}> / {mem.limit}</span>} Mi,
+              stdDev: {mem.stdDev.toFixed(0)} Mi ({mem.stdDevPercent.toFixed(2)}%)<br/>
+            </div>
+          )}
         </div>
-      )}
+        <div>
+          {cpu && (
+            <div>
+              {cpu.min.toFixed(0)}–{cpu.max.toFixed(0)} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
+              stdDev: {cpu.stdDev.toFixed(0)} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
