@@ -8,7 +8,7 @@ export default function App() {
   const [workload, setWorkload] = React.useState<Workload>();
 
   React.useState(async () => {
-    let workload = await API.fetch('workload-stats/146?step=2717').then(r => r.json());
+    let workload = await API.fetch('workloads/146').then(r => r.json());
     setWorkload(workload);
   });
 

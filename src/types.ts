@@ -1,10 +1,12 @@
 export interface Workload {
+  id: number;
   kind: WorkloadKind;
   namespace: string;
   name: string;
   priority: number;
-  stats: {[containerName: string]: ContainerStats};
 };
+
+export type WorkloadStats = {[containerName: string]: ContainerStats};
 
 export type WorkloadKind = 'ReplicaSet' | 'Deployment' | 'DaemonSet' | 'CronJob' | 'StatefulSet' | 'Job';
 
