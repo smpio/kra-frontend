@@ -4,6 +4,7 @@ export interface Workload {
   namespace: string;
   name: string;
   priority: number;
+  stats?: WorkloadStats;
 };
 
 export type WorkloadStats = {[containerName: string]: ContainerStats};
@@ -17,15 +18,16 @@ export interface ContainerStats {
 };
 
 export interface ResourceRequest {
-  since: string,
-  till: string|null,
+  since: Date,
+  till: Date|null,
   memory_limit_mi: number|null;
   cpu_request_m: number|null;
 };
 
 export interface ResourceUsage {
-  measured_at: string,
+  measured_at: Date,
   memory_mi: number,
+  cpu_m: number,
   cpu_m_seconds: number,
 };
 

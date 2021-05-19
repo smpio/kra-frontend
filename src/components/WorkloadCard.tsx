@@ -1,5 +1,5 @@
 import React from 'react';
-import API from 'api';
+import * as API from 'api';
 import {Workload, WorkloadStats} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
@@ -15,8 +15,10 @@ export default function WorkloadCard(props: WorkloadCardProps) {
 
   if (!stats && inView) {
     (async () => {
-      let chartStepSec = 2717;  // TODO: calc from width
-      let workload = await API.fetch(`workloads/${props.workload.id}?stats&step=${chartStepSec}`).then(r => r.json());
+      let workload = await API.getWorkload(props.workload.id, {
+        stats: true,
+        step: 2717,   // TODO: calc from width
+      });
       setStats(workload.stats);
     })();
   }

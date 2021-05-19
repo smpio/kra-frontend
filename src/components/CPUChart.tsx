@@ -1,7 +1,7 @@
 import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
-import {parseDate, chain} from 'utils';
+import {chain} from 'utils';
 import {useD3} from 'hooks';
 
 interface CPUChartProps {
@@ -10,58 +10,30 @@ interface CPUChartProps {
 };
 
 export default function CPUChart(props: CPUChartProps) {
-  interface DataPoint {
-    time: Date,
-    value: number
-  };
-
-  let usage = props.stats.usage.map(u => ({
-    ...u,
-    measured_at: parseDate(u.measured_at)
-  }));
-
-  let usageCoords = usage.reduce((result: DataPoint[], u, idx) => {
-    if (idx !== 0) {
-      let prev = usage[idx-1];
-      result.push({
-        time: u.measured_at,
-        value: 1000 * (u.cpu_m_seconds - prev.cpu_m_seconds) / (u.measured_at.getTime() - prev.measured_at.getTime()),
-      });
-    }
-
-    return result;
-  }, []);
-
-  let requests = props.stats.requests.map(r => ({
-    ...r,
-    since: parseDate(r.since),
-    till: parseDate(r.till) || new Date(),
-  }));
-
-  let requestsCoords = requests.reduce((coords: {x: Date, y: number}[], request) => {
-    if (request.cpu_request_m) {
-      coords.push({
-        x: request.since,
-        y: request.cpu_request_m,
-      });
-      coords.push({
-        x: request.till,
-        y: request.cpu_request_m,
-      });
-    }
-    return coords;
-  }, []);
-
   const ref = useD3((svg, {width, height}) => {
     let margin = {top: 20, right: 30, bottom: 30, left: 40};
 
+    let requestPoints = [];
+    for (let r of props.stats.requests) {
+      if (r.cpu_request_m) {
+        requestPoints.push({
+          time: r.since,
+          value: r.cpu_request_m,
+        });
+        requestPoints.push({
+          time: r.till || new Date(),
+          value: r.cpu_request_m,
+        });
+      }
+    }
+
     let x = d3.scaleTime()
-      .domain(d3.extent(usageCoords, u => u.time) as [Date, Date]).nice()
+      .domain(d3.extent(props.stats.usage, u => u.measured_at) as [Date, Date]).nice()
       .range([margin.left, width - margin.right]);
 
     let yDomain = d3.extent(chain(
-      usageCoords.map(u => u.value),
-      requestsCoords.map(r => r.y),
+      props.stats.usage.map(u => u.cpu_m),
+      requestPoints.map(r => r.value),
     )) as [number, number];
 
     let y = d3.scaleLinear()
@@ -82,13 +54,14 @@ export default function CPUChart(props: CPUChartProps) {
         .attr('font-weight', 'bold')
         .text('Mi'));
 
-    let usageLine = d3.line<typeof usageCoords[0]>()
-      .x(u => x(u.time))
-      .y(u => y(u.value));
+    let usageLine = d3.line<typeof props.stats.usage[0]>()
+      .defined(r => !isNaN(r.cpu_m))
+      .x(u => x(u.measured_at))
+      .y(u => y(u.cpu_m));
 
-    let requestsLine = d3.line<typeof requestsCoords[0]>()
-      .x(r => x(r.x))
-      .y(r => y(r.y));
+    let requestsLine = d3.line<typeof requestPoints[0]>()
+      .x(r => x(r.time))
+      .y(r => y(r.value));
 
     svg.append('g')
       .call(xAxis);
@@ -97,7 +70,7 @@ export default function CPUChart(props: CPUChartProps) {
       .call(yAxis);
 
     svg.append('path')
-      .datum(usageCoords)
+      .datum(props.stats.usage)
       .attr('fill', 'none')
       .attr('stroke', 'steelblue')
       .attr('stroke-width', 1.5)
@@ -106,14 +79,14 @@ export default function CPUChart(props: CPUChartProps) {
       .attr('d', usageLine);
 
     svg.append('path')
-      .datum(requestsCoords)
+      .datum(requestPoints)
       .attr('fill', 'none')
       .attr('stroke', 'orange')
       .attr('stroke-width', 1.5)
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
       .attr('d', requestsLine);
-  }, [requestsCoords, usageCoords]);
+  }, [props.stats]);
 
   return <svg ref={ref} className={props.className} />;
 }

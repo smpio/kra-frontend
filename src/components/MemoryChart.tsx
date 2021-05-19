@@ -1,7 +1,7 @@
 import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
-import {parseDate, chain} from 'utils';
+import {chain} from 'utils';
 import {useD3} from 'hooks';
 
 interface MemoryChartProps {
@@ -10,41 +10,30 @@ interface MemoryChartProps {
 };
 
 export default function MemoryChart(props: MemoryChartProps) {
-  let usage = props.stats.usage.map(u => ({
-    ...u,
-    measured_at: parseDate(u.measured_at)
-  }));
-
-  let requests = props.stats.requests.map(r => ({
-    ...r,
-    since: parseDate(r.since),
-    till: parseDate(r.till) || new Date(),
-  }));
-
   const ref = useD3((svg, {width, height}) => {
     let margin = {top: 20, right: 30, bottom: 30, left: 40};
 
-    let requestsCoords = requests.reduce((coords: {x: Date, y: number}[], request) => {
-      if (request.memory_limit_mi) {
-        coords.push({
-          x: request.since,
-          y: request.memory_limit_mi,
+    let requestPoints = [];
+    for (let r of props.stats.requests) {
+      if (r.memory_limit_mi) {
+        requestPoints.push({
+          time: r.since,
+          value: r.memory_limit_mi,
         });
-        coords.push({
-          x: request.till,
-          y: request.memory_limit_mi,
+        requestPoints.push({
+          time: r.till || new Date(),
+          value: r.memory_limit_mi,
         });
       }
-      return coords;
-    }, []);
+    }
 
     let x = d3.scaleTime()
-      .domain(d3.extent(usage, u => u.measured_at) as [Date, Date]).nice()
+      .domain(d3.extent(props.stats.usage, u => u.measured_at) as [Date, Date]).nice()
       .range([margin.left, width - margin.right]);
 
     let yDomain = d3.extent(chain(
-      usage.map(u => u.memory_mi),
-      requests.map(r => r.memory_limit_mi).filter(limit => !!limit) as number[],
+      props.stats.usage.map(u => u.memory_mi),
+      requestPoints.map(r => r.value),
     )) as [number, number];
 
     let y = d3.scaleLinear()
@@ -65,13 +54,13 @@ export default function MemoryChart(props: MemoryChartProps) {
         .attr('font-weight', 'bold')
         .text('Mi'));
 
-    let usageLine = d3.line<typeof usage[0]>()
+    let usageLine = d3.line<typeof props.stats.usage[0]>()
       .x(u => x(u.measured_at))
       .y(u => y(u.memory_mi));
 
-    let requestsLine = d3.line<typeof requestsCoords[0]>()
-      .x(r => x(r.x))
-      .y(r => y(r.y));
+    let requestsLine = d3.line<typeof requestPoints[0]>()
+      .x(r => x(r.time))
+      .y(r => y(r.value));
 
     svg.append('g')
       .call(xAxis);
@@ -80,7 +69,7 @@ export default function MemoryChart(props: MemoryChartProps) {
       .call(yAxis);
 
     svg.append('path')
-      .datum(usage)
+      .datum(props.stats.usage)
       .attr('fill', 'none')
       .attr('stroke', 'steelblue')
       .attr('stroke-width', 1.5)
@@ -89,14 +78,14 @@ export default function MemoryChart(props: MemoryChartProps) {
       .attr('d', usageLine);
 
     svg.append('path')
-      .datum(requestsCoords)
+      .datum(requestPoints)
       .attr('fill', 'none')
       .attr('stroke', 'orange')
       .attr('stroke-width', 1.5)
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
       .attr('d', requestsLine);
-  }, [requests, usage]);
+  }, [props.stats]);
 
   return <svg ref={ref} className={props.className} />;
 }
