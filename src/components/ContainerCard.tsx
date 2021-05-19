@@ -1,6 +1,7 @@
 import {ContainerStats} from 'types';
 import * as math from 'math';
 import MemoryChart from './MemoryChart';
+import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
 
 interface ContainerCardProps {
@@ -37,6 +38,7 @@ export default function ContainerCard(props: ContainerCardProps) {
         </div>
       )}
       <MemoryChart stats={props.stats} className={styles.chart} />
+      <CPUChart stats={props.stats} className={styles.chart} />
     </div>
   );
 }
