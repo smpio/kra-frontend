@@ -5,18 +5,19 @@ import styles from './App.module.css';
 import WorkloadCard from './WorkloadCard';
 
 export default function App() {
-  const [workload, setWorkload] = React.useState<Workload>();
+  const [workloads, setWorkloads] = React.useState<Workload[]>();
 
   React.useState(async () => {
-    let workload = await API.fetch('workloads/146').then(r => r.json());
-    setWorkload(workload);
+    let workloads = await API.fetch('workloads/').then(r => r.json());
+    //let workloads = [await API.fetch('workloads/146').then(r => r.json())];
+    setWorkloads(workloads);
   });
 
   return (
     <div className={styles.container}>
-      {workload && (
-        <WorkloadCard workload={workload} />
-      )}
+      {workloads && workloads.map(workload => (
+        <WorkloadCard key={workload.id} workload={workload} />
+      ))}
     </div>
   );
 }
