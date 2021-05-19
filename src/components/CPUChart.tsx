@@ -2,6 +2,7 @@ import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
 import {parseDate, chain} from 'utils';
+import {useD3} from 'hooks';
 
 interface CPUChartProps {
   stats: ContainerStats;
@@ -9,8 +10,6 @@ interface CPUChartProps {
 };
 
 export default function CPUChart(props: CPUChartProps) {
-  const ref = React.useRef<SVGSVGElement>(null);
-
   interface DataPoint {
     time: Date,
     value: number
@@ -53,15 +52,8 @@ export default function CPUChart(props: CPUChartProps) {
     return coords;
   }, []);
 
-  React.useEffect(() => {
-    if (!ref.current) return;
-    let svg = d3.select(ref.current);
-    let width = ref.current.clientWidth;
-    let height = ref.current.clientHeight;
+  const ref = useD3((svg, {width, height}) => {
     let margin = {top: 20, right: 30, bottom: 30, left: 40};
-
-    // clean for rerender
-    svg.selectChildren('*').remove();
 
     let x = d3.scaleTime()
       .domain(d3.extent(usageCoords, u => u.time) as [Date, Date]).nice()

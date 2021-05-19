@@ -2,6 +2,7 @@ import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
 import {parseDate, chain} from 'utils';
+import {useD3} from 'hooks';
 
 interface MemoryChartProps {
   stats: ContainerStats;
@@ -9,8 +10,6 @@ interface MemoryChartProps {
 };
 
 export default function MemoryChart(props: MemoryChartProps) {
-  const ref = React.useRef<SVGSVGElement>(null);
-
   let usage = props.stats.usage.map(u => ({
     ...u,
     measured_at: parseDate(u.measured_at)
@@ -22,15 +21,8 @@ export default function MemoryChart(props: MemoryChartProps) {
     till: parseDate(r.till) || new Date(),
   }));
 
-  React.useEffect(() => {
-    if (!ref.current) return;
-    let svg = d3.select(ref.current);
-    let width = ref.current.clientWidth;
-    let height = ref.current.clientHeight;
+  const ref = useD3((svg, {width, height}) => {
     let margin = {top: 20, right: 30, bottom: 30, left: 40};
-
-    // clean for rerender
-    svg.selectChildren('*').remove();
 
     let requestsCoords = requests.reduce((coords: {x: Date, y: number}[], request) => {
       if (request.memory_limit_mi) {
