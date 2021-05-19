@@ -1,6 +1,7 @@
 import {ContainerStats} from 'types';
 import * as math from 'math';
 import MemoryChart from './MemoryChart';
+import styles from './ContainerCard.module.css';
 
 interface ContainerCardProps {
   name: string;
@@ -35,7 +36,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           Memory limit: {stats.memLimit} Mi<br/>
         </div>
       )}
-      <MemoryChart stats={props.stats} />
+      <MemoryChart stats={props.stats} className={styles.chart} />
     </div>
   );
 }

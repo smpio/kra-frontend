@@ -1,11 +1,11 @@
 import React from 'react';
 import {ContainerStats, D3GElement} from 'types';
 import * as d3 from 'd3';
-import styles from './MemoryChart.module.css';
 import {parseDate, chain} from 'utils';
 
 interface MemoryChartProps {
   stats: ContainerStats;
+  className?: string;
 };
 
 export default function MemoryChart(props: MemoryChartProps) {
@@ -106,5 +106,5 @@ export default function MemoryChart(props: MemoryChartProps) {
       .attr('d', requestsLine);
   }, [requests, usage]);
 
-  return <svg ref={ref} className={styles.chart} />;
+  return <svg ref={ref} className={props.className} />;
 }
