@@ -17,7 +17,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     (async () => {
       let workload = await API.getWorkload(props.workload.id, {
         stats: true,
-        step: 2717,   // TODO: calc from width
+        step: 5434,   // TODO: calc from width
       });
       setStats(workload.stats);
     })();
