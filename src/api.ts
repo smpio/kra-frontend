@@ -68,7 +68,11 @@ function cleanWorkload(workload: Workload) {
           u.cpu_m = NaN;
         } else {
           let prev = containerStats.usage[idx-1];
-          u.cpu_m = 1000 * (u.cpu_m_seconds - prev.cpu_m_seconds) / (u.measured_at.getTime() - prev.measured_at.getTime());
+          if (u.cpu_m_seconds > prev.cpu_m_seconds) {
+            u.cpu_m = 1000 * (u.cpu_m_seconds - prev.cpu_m_seconds) / (u.measured_at.getTime() - prev.measured_at.getTime());
+          } else {
+            u.cpu_m = NaN;
+          }
         }
       });
     }
