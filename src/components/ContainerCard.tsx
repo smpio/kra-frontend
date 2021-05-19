@@ -1,9 +1,6 @@
-import React from 'react';
-import {ContainerStats, D3GElement} from 'types';
-import * as d3 from 'd3';
-import styles from './ContainerCard.module.css';
+import {ContainerStats} from 'types';
 import * as math from 'math';
-import {parseDate, chain} from 'utils';
+import MemoryChart from './MemoryChart';
 
 interface ContainerCardProps {
   name: string;
@@ -11,109 +8,12 @@ interface ContainerCardProps {
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
-  const ref = React.useRef<SVGSVGElement>(null);
-
-  let usage = props.stats.usage.map(u => ({
-    ...u,
-    measured_at: parseDate(u.measured_at)
-  }));
-
-  let requests = props.stats.requests.map(r => ({
-    ...r,
-    since: parseDate(r.since),
-    till: parseDate(r.till) || new Date(),
-  }));
-
-  React.useEffect(() => {
-    if (!ref.current) return;
-    let svg = d3.select(ref.current);
-    let width = ref.current.clientWidth;
-    let height = ref.current.clientHeight;
-    let margin = {top: 20, right: 30, bottom: 30, left: 40};
-
-    // clean for rerender
-    svg.selectChildren('*').remove();
-
-    let requestsCoords = requests.reduce((coords: {x: Date, y: number}[], request) => {
-      if (request.memory_limit_mi) {
-        coords.push({
-          x: request.since,
-          y: request.memory_limit_mi,
-        });
-        coords.push({
-          x: request.till,
-          y: request.memory_limit_mi,
-        });
-      }
-      return coords;
-    }, []);
-
-    let x = d3.scaleTime()
-      .domain(d3.extent(usage, u => u.measured_at) as [Date, Date]).nice()
-      .range([margin.left, width - margin.right]);
-
-    let yDomain = d3.extent(chain(
-      usage.map(u => u.memory_mi),
-      requests.map(r => r.memory_limit_mi).filter(limit => !!limit) as number[],
-    )) as [number, number];
-
-    let y = d3.scaleLinear()
-      .domain(yDomain).nice()
-      .range([height - margin.bottom, margin.top]);
-
-    let xAxis = (g: D3GElement) => g
-      .attr('transform', `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0));
-
-    let yAxis = (g: D3GElement) => g
-      .attr('transform', `translate(${margin.left},0)`)
-      .call(d3.axisLeft(y))
-      .call(g => g.select('.domain').remove())
-      .call(g => g.select('.tick:last-of-type text').clone()
-        .attr('x', 3)
-        .attr('text-anchor', 'start')
-        .attr('font-weight', 'bold')
-        .text('Mi'));
-
-    let usageLine = d3.line<typeof usage[0]>()
-      .x(u => x(u.measured_at))
-      .y(u => y(u.memory_mi));
-
-    let requestsLine = d3.line<typeof requestsCoords[0]>()
-      .x(r => x(r.x))
-      .y(r => y(r.y));
-
-    svg.append('g')
-      .call(xAxis);
-
-    svg.append('g')
-      .call(yAxis);
-
-    svg.append('path')
-      .datum(usage)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', usageLine);
-
-    svg.append('path')
-      .datum(requestsCoords)
-      .attr('fill', 'none')
-      .attr('stroke', 'orange')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', requestsLine);
-  }, [requests, usage]);
-
   let memMin = math.min(props.stats.usage.map(u => u.memory_mi));
   let memMax = math.max(props.stats.usage.map(u => u.memory_mi));
   let memMean = math.mean(props.stats.usage.map(u => u.memory_mi));
   let memStdDev = math.stdDev(props.stats.usage.map(u => u.memory_mi));
   let memStdDevPercent = memStdDev / memMean * 100;
-  let memLimit = requests[requests.length-1].memory_limit_mi;
+  let memLimit = props.stats.requests[props.stats.requests.length-1].memory_limit_mi;
 
   return (
     <div>
@@ -124,7 +24,7 @@ export default function ContainerCard(props: ContainerCardProps) {
         Memory stdDev: {memStdDev.toFixed(0)} Mi ({memStdDevPercent.toFixed(2)}%)<br/>
         Memory limit: {memLimit} Mi<br/>
       </div>
-      <svg ref={ref} className={styles.chart} />
+      <MemoryChart stats={props.stats} />
     </div>
   );
 }
