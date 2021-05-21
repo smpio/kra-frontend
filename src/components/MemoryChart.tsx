@@ -85,6 +85,25 @@ export default function MemoryChart(props: MemoryChartProps) {
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
       .attr('d', requestsLine);
+
+    let oomLine = d3.line<[Date, number]>()
+      .x(i => x(i[0]))
+      .y(i => y(i[1]));
+
+    for (let oomEvent of props.stats.oom_events) {
+      let d: [Date, number][] = [
+        [oomEvent.happened_at, yDomain[0]],
+        [oomEvent.happened_at, yDomain[1]],
+      ];
+      svg.append('path')
+        .datum(d)
+        .attr('fill', 'none')
+        .attr('stroke', '#ff000088')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('d', oomLine);
+    }
   }, [props.stats]);
 
   return <svg ref={ref} className={props.className} />;
