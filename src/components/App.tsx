@@ -1,23 +1,26 @@
 import React from 'react';
-import * as API from 'api';
-import {Workload} from 'types';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from "react-router-dom";
 import styles from './App.module.css';
-import WorkloadCard from './WorkloadCard';
+import WorkloadDetailPage from './WorloadDetailPage';
+import WorkloadListPage from './WorloadListPage';
 
 export default function App() {
-  const [workloads, setWorkloads] = React.useState<Workload[]>();
-
-  React.useState(async () => {
-    // let workloads = await API.getWorkloads();
-    let workloads = [await API.getWorkload(146)];
-    setWorkloads(workloads);
-  });
-
   return (
-    <div className={styles.container}>
-      {workloads && workloads.map(workload => (
-        <WorkloadCard key={workload.id} workload={workload} />
-      ))}
-    </div>
+    <Router>
+      <div className={styles.container}>
+        <Switch>
+          <Route path="/workload/:id">
+            <WorkloadDetailPage />
+          </Route>
+          <Route path="/">
+            <WorkloadListPage />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   );
 }

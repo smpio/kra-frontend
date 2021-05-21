@@ -4,6 +4,7 @@ import {Workload, WorkloadStats} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
+import { Link } from 'react-router-dom';
 
 interface WorkloadCardProps {
   workload: Workload;
@@ -35,7 +36,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   return (
     <div ref={ref} className={styles.card}>
       <h2>
-        <code>{props.workload.kind} {props.workload.namespace}/{props.workload.name}</code>
+        <Link to={`/workload/${props.workload.id}`}><code>{props.workload.kind} {props.workload.namespace}/{props.workload.name}</code></Link>
         {' '}<span className={styles.id}>{props.workload.id}</span>
       </h2>
       {stats && Object.entries(stats).map(([containerName, containerStats]) => (

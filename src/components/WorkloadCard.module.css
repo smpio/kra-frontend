@@ -10,3 +10,8 @@
 :hover > .id {
   visibility: unset;
 }
+
+.card h2 a {
+  text-decoration: unset;
+  color: unset;
+}
