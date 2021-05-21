@@ -67,7 +67,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           {cpu && (
             <div>
               {cpu.min.toFixed(0)}–{cpu.max.toFixed(0)} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
-              stdDev: {cpu.stdDev.toFixed(0)} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
+              mean: {cpu.mean.toFixed(0)} m, stdDev: {cpu.stdDev.toFixed(0)} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
             </div>
           )}
         </div>
