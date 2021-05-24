@@ -1,8 +1,9 @@
 import React from 'react';
-import * as API from 'api';
-import {Workload} from 'types';
 import WorkloadCard from './WorkloadCard';
 import {useParams} from "react-router-dom";
+import { useWorkload } from 'hooks';
+import LoadingIndicator from './LoadingIndicator';
+import ErrorDetail from './ErrorDetail';
 
 interface PageParams {
   id: string;
@@ -10,18 +11,19 @@ interface PageParams {
 
 export default function WorkloadDetailPage() {
   let {id} = useParams<PageParams>();
-  const [workload, setWorkload] = React.useState<Workload>();
+  const {isLoading, error, data} = useWorkload(parseInt(id));
 
-  React.useEffect(() => {
-    (async () => {
-      let workload = await API.getWorkload(parseInt(id));
-      setWorkload(workload);
-    })();
-  }, [id]);
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
-  return (
-    <div>
-      {workload && <WorkloadCard workload={workload} />}
-    </div>
-  );
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return <WorkloadCard workload={data} />;
 }

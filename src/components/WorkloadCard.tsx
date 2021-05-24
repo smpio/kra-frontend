@@ -1,37 +1,25 @@
 import React from 'react';
-import * as API from 'api';
-import {Workload, WorkloadStats} from 'types';
+import {Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
+import { useWorkload } from 'hooks';
+import LoadingIndicator from './LoadingIndicator';
+import ErrorDetail from './ErrorDetail';
 
 interface WorkloadCardProps {
   workload: Workload;
 };
 
 export default function WorkloadCard(props: WorkloadCardProps) {
-  const [stats, setStats] = React.useState<WorkloadStats>();
-  const [shouldLoad, setShouldLoad] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
   const {ref, inView} = useInView();
-
-  if (inView && !shouldLoad) {
-    setShouldLoad(true);
-  }
-
-  React.useEffect(() => {
-    if (!shouldLoad || isLoading) return;
-    setIsLoading(true);
-
-    (async () => {
-      let workload = await API.getWorkload(props.workload.id, {
-        stats: true,
-        step: 5434,   // TODO: calc from width
-      });
-      setStats(workload.stats);
-    })();
-  }, [shouldLoad, isLoading, props.workload]);
+  const workload = useWorkload(props.workload.id, {
+    stats: true,
+    step: 5434,   // TODO: calc from width
+  }, {
+    enabled: inView,
+  });
 
   return (
     <div ref={ref} className={styles.card}>
@@ -39,7 +27,9 @@ export default function WorkloadCard(props: WorkloadCardProps) {
         <Link to={`/workload/${props.workload.id}`}><code>{props.workload.kind} {props.workload.namespace}/{props.workload.name}</code></Link>
         {' '}<span className={styles.id}>{props.workload.id}</span>
       </h2>
-      {stats && Object.entries(stats).map(([containerName, containerStats]) => (
+      {workload.isLoading && <LoadingIndicator />}
+      {workload.error && <ErrorDetail error={workload.error} />}
+      {workload.data?.stats && Object.entries(workload.data.stats).map(([containerName, containerStats]) => (
         <ContainerCard
           key={containerName}
           name={containerName}

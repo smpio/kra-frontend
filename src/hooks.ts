@@ -1,5 +1,8 @@
 import React from 'react';
 import * as d3 from 'd3';
+import * as API from 'api';
+import {useQuery, UseQueryOptions} from 'react-query';
+import { Workload } from 'types';
 
 type RenderFunc = (svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, size: Size) => void;
 interface Size {
@@ -23,3 +26,11 @@ export function useD3(renderFunc: RenderFunc, dependencies: React.DependencyList
 
   return ref;
 };
+
+export function useWorkloads(options?: {stats?: boolean, step?: number}) {
+  return useQuery(['workloads', options], () => API.getWorkloads(options));
+}
+
+export function useWorkload(id: number, options?: {stats?: boolean, step?: number}, queryOptions?: UseQueryOptions<Workload>) {
+  return useQuery(['workloads', id, options], () => API.getWorkload(id, options), queryOptions);
+}

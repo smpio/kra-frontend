@@ -1,19 +1,27 @@
 import React from 'react';
-import * as API from 'api';
-import {Workload} from 'types';
 import WorkloadCard from './WorkloadCard';
+import { useWorkloads } from 'hooks';
+import LoadingIndicator from './LoadingIndicator';
+import ErrorDetail from './ErrorDetail';
 
 export default function WorkloadListPage() {
-  const [workloads, setWorkloads] = React.useState<Workload[]>();
+  const {isLoading, error, data} = useWorkloads();
 
-  React.useState(async () => {
-    let workloads = await API.getWorkloads();
-    setWorkloads(workloads);
-  });
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
+
+  if (!data) {
+    return null;
+  }
 
   return (
     <div>
-      {workloads && workloads.map(workload => (
+      {data.map(workload => (
         <WorkloadCard key={workload.id} workload={workload} />
       ))}
     </div>
