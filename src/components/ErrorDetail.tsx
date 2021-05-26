@@ -5,5 +5,10 @@ interface ErrorDetailProps {
 }
 
 export default function ErrorDetail(props: ErrorDetailProps) {
-  return <div>Error: {props.error}</div>;
+  let detail = 'Unknown error';
+  if (typeof props.error.toString === 'function') {
+    detail = props.error.toString();
+  }
+
+  return <div>Error: {detail}</div>;
 }
