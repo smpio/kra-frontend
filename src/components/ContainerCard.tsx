@@ -1,4 +1,4 @@
-import {ContainerStats} from 'types';
+import {ContainerStats, Suggestion} from 'types';
 import * as math from 'math';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
@@ -7,6 +7,7 @@ import styles from './ContainerCard.module.css';
 interface ContainerCardProps {
   name: string;
   stats: ContainerStats;
+  suggestion?: Suggestion;
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
@@ -72,6 +73,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           )}
         </div>
       </div>
+      {renderSuggestion(props.suggestion)}
     </div>
   );
 }
@@ -81,3 +83,22 @@ ContainerCard.getStatsSteps = (cardWidth: number) => {
   let chartMargins = 70;
   return chartWidth - chartMargins;
 };
+
+function renderSuggestion(s?: Suggestion) {
+  if (!s) {
+    return null;
+  }
+
+  return (
+    <div>
+      <div><b>Suggestion</b> (priority: {s.priority}):</div>
+      {s.new_memory_limit_mi && (
+        <div>new memory limit: {s.new_memory_limit_mi}, current: {s.summary.memory_limit_mi}</div>
+      )}
+      {s.new_cpu_request_m && (
+        <div>new CPU request: {s.new_cpu_request_m}, current: {s.summary.cpu_request_m}</div>
+      )}
+      <div>{s.reason}</div>
+    </div>
+  );
+}

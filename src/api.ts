@@ -1,4 +1,4 @@
-import { Workload, WorkloadStats } from 'types';
+import { Workload, WorkloadStats, Suggestion } from 'types';
 import {parseDate} from 'utils';
 
 export const baseUrl = 'http://localhost:8000/';
@@ -98,4 +98,9 @@ export class APIError extends Error {
     this.name = this.constructor.name;
     this.response = response;
   }
+}
+
+export function getSuggestions(): Promise<Suggestion[]> {
+  // TODO: parse dates
+  return get(`suggestions/`).then(r => r.json()) as Promise<Suggestion[]>;
 }

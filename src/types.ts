@@ -41,4 +41,25 @@ export interface OOMEvent {
   victim_pid: number;
 };
 
+export interface Summary {
+  id: number;
+  container_name: string;
+  done_at: Date;
+  max_memory_mi: number;
+  memory_limit_mi: number|null;
+  avg_cpu_m: number;
+  cpu_request_m: number|null;
+  workload: number;
+};
+
+export interface Suggestion {
+  id: number;
+  done_at: Date;
+  new_memory_limit_mi: number|null;
+  new_cpu_request_m: number|null;
+  reason: string;
+  priority: number;
+  summary: Summary;
+};
+
 export type D3GElement = d3.Selection<SVGGElement, unknown, null, undefined>;

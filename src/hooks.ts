@@ -34,3 +34,7 @@ export function useWorkloads(options?: {stats?: boolean, step?: number}) {
 export function useWorkload(id: number, options?: {stats?: boolean, step?: number}, queryOptions?: UseQueryOptions<Workload>) {
   return useQuery(['workloads', id, options], () => API.getWorkload(id, options), queryOptions);
 }
+
+export function useSuggestions() {
+  return useQuery(['suggestions'], () => API.getSuggestions());
+}

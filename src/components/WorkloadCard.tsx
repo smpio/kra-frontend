@@ -1,5 +1,5 @@
 import React from 'react';
-import {Workload} from 'types';
+import {Suggestion, Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
@@ -10,6 +10,7 @@ import ErrorDetail from './ErrorDetail';
 
 interface WorkloadCardProps {
   workload: Workload;
+  suggestions?: Suggestion[];
 };
 
 export default function WorkloadCard(props: WorkloadCardProps) {
@@ -20,6 +21,11 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   }, {
     enabled: inView,
   });
+
+  let suggestionsByContainerName = props.suggestions?.reduce((map, s) => {
+    map[s.summary.container_name] = s;
+    return map;
+  }, {} as {[cname: string]: Suggestion});
 
   return (
     <div ref={ref} className={styles.card}>
@@ -34,6 +40,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           key={containerName}
           name={containerName}
           stats={containerStats}
+          suggestion={suggestionsByContainerName?.[containerName]}
           />
       ))}
     </div>
