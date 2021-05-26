@@ -92,8 +92,8 @@ export default function MemoryChart(props: MemoryChartProps) {
 
     for (let oomEvent of props.stats.oom_events) {
       let d: [Date, number][] = [
-        [oomEvent.happened_at, yDomain[0]],
-        [oomEvent.happened_at, yDomain[1]],
+        [oomEvent.happened_at, y.domain()[0]],
+        [oomEvent.happened_at, y.domain()[1]],
       ];
       svg.append('path')
         .datum(d)
