@@ -33,7 +33,7 @@ export default function ContainerCard(props: ContainerCardProps) {
       cpu = {
         min: math.min(noNaN.map(u => u.cpu_m)),
         max: math.max(noNaN.map(u => u.cpu_m)),
-        mean: props.summary.avg_cpu_m || 0,
+        mean: props.summary.avg_cpu_m,
         stdDev: math.stdDev(noNaN.map(u => u.cpu_m)),
         stdDevPercent: 0,
         request: props.summary.cpu_request_m,
