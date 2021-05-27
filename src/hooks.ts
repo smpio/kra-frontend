@@ -27,11 +27,11 @@ export function useD3(renderFunc: RenderFunc, dependencies: React.DependencyList
   return ref;
 };
 
-export function useWorkloads(options?: {stats?: boolean, step?: number}) {
+export function useWorkloads(options?: API.WorkloadQueryParams) {
   return useQuery(['workloads', options], () => API.getWorkloads(options));
 }
 
-export function useWorkload(id: number, options?: {stats?: boolean, step?: number}, queryOptions?: UseQueryOptions<Workload>) {
+export function useWorkload(id: number, options?: API.WorkloadQueryParams, queryOptions?: UseQueryOptions<Workload>) {
   return useQuery(['workloads', id, options], () => API.getWorkload(id, options), queryOptions);
 }
 

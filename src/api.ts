@@ -12,8 +12,17 @@ export async function get(uri: string) {
   return response;
 }
 
-export async function getWorkload(id: number, options?: {stats?: boolean, step?: number}): Promise<Workload> {
+export interface WorkloadQueryParams {
+  summary?: boolean;
+  stats?: boolean;
+  step?: number;
+};
+
+export async function getWorkload(id: number, options?: WorkloadQueryParams): Promise<Workload> {
   let params = new URLSearchParams();
+  if (options?.summary) {
+    params.set('summary', '');
+  }
   if (options?.stats) {
     params.set('stats', '');
   }
@@ -27,8 +36,11 @@ export async function getWorkload(id: number, options?: {stats?: boolean, step?:
   return workload;
 }
 
-export async function getWorkloads(options?: {stats?: boolean, step?: number}): Promise<Workload[]> {
+export async function getWorkloads(options?: WorkloadQueryParams): Promise<Workload[]> {
   let params = new URLSearchParams();
+  if (options?.summary) {
+    params.set('summary', '');
+  }
   if (options?.stats) {
     params.set('stats', '');
   }
@@ -45,6 +57,8 @@ export async function getWorkloads(options?: {stats?: boolean, step?: number}): 
 }
 
 function cleanWorkload(workload: Workload) {
+  // TODO: parse dates in suggestions
+
   if (workload.stats) {
     let stats: WorkloadStats = {};
 

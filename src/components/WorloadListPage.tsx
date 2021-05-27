@@ -1,52 +1,35 @@
 import React from 'react';
 import WorkloadCard from './WorkloadCard';
-import { useSuggestions, useWorkloads } from 'hooks';
+import { useWorkloads } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
-import { Workload, Suggestion } from 'types';
+import { Workload } from 'types';
 import { sum } from 'math';
 
 export default function WorkloadListPage() {
-  const workloads = useWorkloads();
-  const suggestions = useSuggestions();
+  const {isLoading, error, data} = useWorkloads({
+    summary: true,
+  });
 
-  if (workloads.isLoading || suggestions.isLoading) {
+  if (isLoading) {
     return <LoadingIndicator />;
   }
 
-  if (workloads.error) {
-    return <ErrorDetail error={workloads.error} />;
+  if (error) {
+    return <ErrorDetail error={error} />;
   }
 
-  if (suggestions.error) {
-    return <ErrorDetail error={suggestions.error} />;
-  }
-
-  if (!workloads.data || !suggestions.data) {
+  if (!data) {
     return null;
   }
 
-  let suggestionsByWorkloadId = suggestions.data.reduce((map, s) => {
-    let wlId = s.summary.workload;
-    if (!map[wlId]) {
-      map[wlId] = [];
-    }
-    map[wlId].push(s);
-    return map;
-  }, {} as {[id: number]: Suggestion[]});
-
-  let workloadsDecorated = workloads.data.map(wl => ({
-    ...wl,
-    suggestions: suggestionsByWorkloadId[wl.id],
-  }));
-
-  let sortKey = (wl: typeof workloadsDecorated[0]) => sum(wl.suggestions?.map(s => s.priority) || [0]);
-  let workloadsDecoratedSorted = workloadsDecorated.sort((a, b) => sortKey(b) - sortKey(a));
+  let sortKey = (wl: Workload) => sum([0, ...wl.summary_set?.map(s => s.suggestion?.priority || 0) || [0]]);
+  let workloads = data.sort((a, b) => sortKey(b) - sortKey(a));
 
   return (
     <div>
-      {workloadsDecoratedSorted.map(workload => (
-        <WorkloadCard key={workload.id} workload={workload} suggestions={workload.suggestions} />
+      {workloads.map(workload => (
+        <WorkloadCard key={workload.id} workload={workload} />
       ))}
     </div>
   );

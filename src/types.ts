@@ -4,6 +4,7 @@ export interface Workload {
   namespace: string;
   name: string;
   priority: number;
+  summary_set?: NestedSummary[];
   stats?: WorkloadStats;
 };
 
@@ -41,24 +42,37 @@ export interface OOMEvent {
   victim_pid: number;
 };
 
-export interface Summary {
-  id: number;
+export interface BaseSummary {
   container_name: string;
   done_at: Date;
   max_memory_mi: number;
   memory_limit_mi: number|null;
   avg_cpu_m: number;
   cpu_request_m: number|null;
+};
+
+export interface NestedSummary extends BaseSummary {
+  suggestion?: NestedSuggestion;
+};
+
+export interface Summary extends BaseSummary {
+  id: number;
   workload: number;
 };
 
-export interface Suggestion {
+export interface BaseSuggestion {
   id: number;
   done_at: Date;
   new_memory_limit_mi: number|null;
   new_cpu_request_m: number|null;
   reason: string;
   priority: number;
+};
+
+export interface NestedSuggestion extends BaseSuggestion {
+};
+
+export interface Suggestion extends BaseSuggestion {
   summary: Summary;
 };
 
