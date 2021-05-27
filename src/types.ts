@@ -45,9 +45,9 @@ export interface OOMEvent {
 export interface BaseSummary {
   container_name: string;
   done_at: Date;
-  max_memory_mi: number;
+  max_memory_mi: number|null;
   memory_limit_mi: number|null;
-  avg_cpu_m: number;
+  avg_cpu_m: number|null;
   cpu_request_m: number|null;
 };
 
