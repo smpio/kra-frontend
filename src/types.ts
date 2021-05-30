@@ -69,7 +69,8 @@ export interface BaseSuggestion {
   done_at: Date;
   new_memory_limit_mi: number|null;
   new_cpu_request_m: number|null;
-  reason: string;
+  memory_reason: string;
+  cpu_reason: string;
   priority: number;
 };
 

@@ -2,6 +2,7 @@ import {ContainerStats, BaseSummary, BaseSuggestion} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
+import React from 'react';
 
 interface ContainerCardProps {
   name: string;
@@ -79,15 +80,30 @@ function renderSuggestion(summary: BaseSummary, sug?: BaseSuggestion) {
   }
 
   return (
-    <div>
-      <div><b>Suggestion</b> (priority: {sug.priority}):</div>
-      {sug.new_memory_limit_mi && (
-        <div>new memory limit: {sug.new_memory_limit_mi}, current: {summary.memory_limit_mi}</div>
-      )}
-      {sug.new_cpu_request_m && (
-        <div>new CPU request: {sug.new_cpu_request_m}, current: {summary.cpu_request_m}</div>
-      )}
-      <div>{sug.reason}</div>
-    </div>
+    <>
+      <div><b>Suggestion</b> (priority {sug.priority}):</div>
+      <div className={styles.row}>
+        <div>
+          {sug.new_memory_limit_mi && (
+            <>
+              set memory limit to {sug.new_memory_limit_mi} Mi
+              (current: {summary.memory_limit_mi || 'not set'})
+              <br/>
+              {sug.memory_reason}
+            </>
+          )}
+        </div>
+        <div>
+          {sug.new_cpu_request_m && (
+            <>
+              set CPU request to {sug.new_cpu_request_m}m
+              (current: {summary.cpu_request_m || 'not set'})
+              <br/>
+              {sug.cpu_reason}
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
