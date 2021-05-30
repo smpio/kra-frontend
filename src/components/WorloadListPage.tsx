@@ -4,7 +4,7 @@ import { useWorkloads } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
 import { Workload } from 'types';
-import { sum } from 'math';
+import { max } from 'math';
 
 export default function WorkloadListPage() {
   const {isLoading, error, data} = useWorkloads({
@@ -23,7 +23,7 @@ export default function WorkloadListPage() {
     return null;
   }
 
-  let sortKey = (wl: Workload) => sum([0, ...wl.summary_set?.map(s => s.suggestion?.priority || 0) || [0]]);
+  let sortKey = (wl: Workload) => max([0, ...wl.summary_set?.map(s => s.suggestion?.priority || 0) || [0]]);
   let workloads = data.sort((a, b) => sortKey(b) - sortKey(a));
 
   return (
