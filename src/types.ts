@@ -46,8 +46,12 @@ export interface BaseSummary {
   container_name: string;
   done_at: Date;
   max_memory_mi: number;
+  avg_memory_mi: number;
+  stddev_memory_mi: number;
   memory_limit_mi: number|null;
+  max_cpu_m: number;
   avg_cpu_m: number;
+  stddev_cpu_m: number;
   cpu_request_m: number|null;
 };
 

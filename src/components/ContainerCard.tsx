@@ -1,5 +1,4 @@
 import {ContainerStats, BaseSummary, BaseSuggestion} from 'types';
-import * as math from 'math';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
@@ -18,29 +17,24 @@ export default function ContainerCard(props: ContainerCardProps) {
 
   if (usage.length > 0) {
     mem = {
-      min: math.min(usage.map(u => u.memory_mi)),
       max: props.summary.max_memory_mi,
-      mean: math.mean(usage.map(u => u.memory_mi)),
-      stdDev: math.stdDev(usage.map(u => u.memory_mi)),
+      mean: props.summary.avg_memory_mi,
+      stdDev: props.summary.stddev_memory_mi,
       stdDevPercent: 0,
       limit: props.summary.memory_limit_mi,
     };
 
     mem.stdDevPercent = mem.stdDev / mem.mean * 100;
 
-    let noNaN = props.stats.usage.filter(u => !isNaN(u.cpu_m));
-    if (noNaN.length > 0) {
-      cpu = {
-        min: math.min(noNaN.map(u => u.cpu_m)),
-        max: math.max(noNaN.map(u => u.cpu_m)),
-        mean: props.summary.avg_cpu_m,
-        stdDev: math.stdDev(noNaN.map(u => u.cpu_m)),
-        stdDevPercent: 0,
-        request: props.summary.cpu_request_m,
-      };
+    cpu = {
+      max: props.summary.max_cpu_m,
+      mean: props.summary.avg_cpu_m,
+      stdDev: props.summary.stddev_cpu_m,
+      stdDevPercent: 0,
+      request: props.summary.cpu_request_m,
+    };
 
-      cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
-    }
+    cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
   }
 
   return (
@@ -54,16 +48,16 @@ export default function ContainerCard(props: ContainerCardProps) {
         <div>
           {mem && (
             <div>
-              {mem.min}–{mem.max} {mem.limit && <span className={styles.limit}> / {mem.limit}</span>} Mi,
-              stdDev: {mem.stdDev.toFixed(0)} Mi ({mem.stdDevPercent.toFixed(2)}%)<br/>
+              {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
+              mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)<br/>
             </div>
           )}
         </div>
         <div>
           {cpu && (
             <div>
-              {cpu.min.toFixed(0)}–{cpu.max.toFixed(0)} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
-              mean: {cpu.mean.toFixed(0)} m, stdDev: {cpu.stdDev.toFixed(0)} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
+              {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
+              mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
             </div>
           )}
         </div>
