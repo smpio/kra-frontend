@@ -41,29 +41,44 @@ export default function ContainerCard(props: ContainerCardProps) {
   return (
     <div>
       <h3><code>{props.name}</code></h3>
-      <div className={styles.row}>
+      <div className={styles.grid}>
         <MemoryChart stats={props.stats} className={styles.chart} />
         <CPUChart stats={props.stats} className={styles.chart} />
-      </div>
-      <div className={styles.row}>
         <div>
           {mem && (
             <div>
               {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
-              mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)<br/>
+              mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
             </div>
+          )}
+          {props.suggestion?.new_memory_limit_mi && (
+            <>
+              <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
+              set memory limit to {props.suggestion.new_memory_limit_mi} Mi
+              (current: {props.summary.memory_limit_mi || 'not set'})
+              <br/>
+              {props.suggestion.memory_reason}
+            </>
           )}
         </div>
         <div>
           {cpu && (
             <div>
               {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
-              mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)<br/>
+              mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)
             </div>
+          )}
+          {props.suggestion?.new_cpu_request_m && (
+            <>
+              <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
+              set CPU request to {props.suggestion.new_cpu_request_m}m
+              (current: {props.summary.cpu_request_m || 'not set'})
+              <br/>
+              {props.suggestion.cpu_reason}
+            </>
           )}
         </div>
       </div>
-      {renderSuggestion(props.summary, props.suggestion)}
     </div>
   );
 }
@@ -73,37 +88,3 @@ ContainerCard.getStatsSteps = (cardWidth: number) => {
   let chartMargins = 70;
   return chartWidth - chartMargins;
 };
-
-function renderSuggestion(summary: BaseSummary, sug?: BaseSuggestion) {
-  if (!sug) {
-    return null;
-  }
-
-  return (
-    <>
-      <div><b>Suggestion</b> (priority {sug.priority}):</div>
-      <div className={styles.row}>
-        <div>
-          {sug.new_memory_limit_mi && (
-            <>
-              set memory limit to {sug.new_memory_limit_mi} Mi
-              (current: {summary.memory_limit_mi || 'not set'})
-              <br/>
-              {sug.memory_reason}
-            </>
-          )}
-        </div>
-        <div>
-          {sug.new_cpu_request_m && (
-            <>
-              set CPU request to {sug.new_cpu_request_m}m
-              (current: {summary.cpu_request_m || 'not set'})
-              <br/>
-              {sug.cpu_reason}
-            </>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
