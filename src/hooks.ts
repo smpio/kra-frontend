@@ -2,15 +2,9 @@ import React from 'react';
 import * as d3 from 'd3';
 import * as API from 'api';
 import {useQuery, UseQueryOptions} from 'react-query';
-import { Workload } from 'types';
+import { Workload, D3RenderFunc } from 'types';
 
-type RenderFunc = (svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, size: Size) => void;
-interface Size {
-  width: number;
-  height: number;
-}
-
-export function useD3(renderFunc: RenderFunc, dependencies: React.DependencyList) {
+export function useD3(renderFunc: D3RenderFunc, dependencies: React.DependencyList) {
   const ref = React.useRef<SVGSVGElement>(null);
 
   React.useEffect(() => {
