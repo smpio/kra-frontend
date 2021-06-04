@@ -50,7 +50,7 @@ export default function ContainerCard(props: ContainerCardProps) {
               mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
             </div>
           )}
-          {props.suggestion?.new_memory_limit_mi && (
+          {props.suggestion?.new_memory_limit_mi != null && (
             <>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set memory limit to {props.suggestion.new_memory_limit_mi} Mi
@@ -68,7 +68,7 @@ export default function ContainerCard(props: ContainerCardProps) {
               mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)
             </div>
           )}
-          {props.suggestion?.new_cpu_request_m && (
+          {props.suggestion?.new_cpu_request_m != null && (
             <>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set CPU request to {props.suggestion.new_cpu_request_m}m
