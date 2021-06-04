@@ -39,43 +39,43 @@ export default function ContainerCard(props: ContainerCardProps) {
   }
 
   return (
-    <div>
+    <div className={styles.card}>
       <h3><code>{props.name}</code></h3>
       <div className={styles.row}>
         <div>
           <MemoryChart stats={props.stats} className={styles.chart} />
           {mem && (
-            <div>
+            <div className={styles.summary}>
               {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
               mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
             </div>
           )}
           {props.suggestion?.new_memory_limit_mi != null && (
-            <>
+            <div className={styles.suggestion}>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set memory limit to {props.suggestion.new_memory_limit_mi} Mi
               (current: {props.summary.memory_limit_mi || 'not set'})
               <br/>
               {props.suggestion.memory_reason}
-            </>
+            </div>
           )}
         </div>
         <div>
           <CPUChart stats={props.stats} className={styles.chart} />
           {cpu && (
-            <div>
+            <div className={styles.summary}>
               {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
               mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)
             </div>
           )}
           {props.suggestion?.new_cpu_request_m != null && (
-            <>
+            <div className={styles.suggestion}>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set CPU request to {props.suggestion.new_cpu_request_m}m
               (current: {props.summary.cpu_request_m || 'not set'})
               <br/>
               {props.suggestion.cpu_reason}
-            </>
+            </div>
           )}
         </div>
       </div>

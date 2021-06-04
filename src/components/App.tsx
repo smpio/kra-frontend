@@ -11,15 +11,17 @@ import WorkloadListPage from './WorloadListPage';
 export default function App() {
   return (
     <Router>
-      <div className={styles.container}>
-        <Switch>
-          <Route path="/workload/:id">
-            <WorkloadDetailPage />
-          </Route>
-          <Route path="/">
-            <WorkloadListPage />
-          </Route>
-        </Switch>
+      <div className={styles.outer}>
+        <div className={styles.inner}>
+          <Switch>
+            <Route path="/workload/:id">
+              <WorkloadDetailPage />
+            </Route>
+            <Route path="/">
+              <WorkloadListPage />
+            </Route>
+          </Switch>
+        </div>
       </div>
     </Router>
   );

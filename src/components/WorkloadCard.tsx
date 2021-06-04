@@ -33,7 +33,6 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     <div ref={ref} className={styles.card}>
       <h2>
         <Link to={`/workload/${props.workload.id}`}><code>{props.workload.kind} {props.workload.namespace}/{props.workload.name}</code></Link>
-        {' '}<span className={styles.id}>{props.workload.id}</span>
       </h2>
       {workload.isLoading && <LoadingIndicator />}
       {workload.error && <ErrorDetail error={workload.error} />}

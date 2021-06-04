@@ -1,16 +1,32 @@
+.card h3 {
+  margin: 0.5rem 0;
+}
+
+.card svg {
+  display: block;
+}
+
 .row {
   display: flex;
+  flex-flow: row wrap;
 }
 
 .row > * {
-  flex: 1;
+  flex: 1 300px;
 }
 
 .chart {
   width: 100%;
   height: 200px;
+  margin: 0.5rem 0;
 }
 
 .limit {
   color: orange;
+}
+
+.summary,
+.suggestion {
+  padding-left: 35px;
+  margin: 0.5rem 0;
 }

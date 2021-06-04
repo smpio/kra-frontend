@@ -1,4 +1,8 @@
-.container {
-  width: 954px;
-  margin: 20px auto;
+.inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.outer {
+  margin: 10px;
 }
