@@ -14,7 +14,7 @@ interface ChartProps {
 
 export default function Chart(props: ChartProps) {
   const ref = useD3((svg, {width, height}) => {
-    let margin = {top: 5, right: 0, bottom: 20, left: 35};
+    let margin = {top: 5, right: 5, bottom: 20, left: 35};
 
     let requestPoints = [];
     for (let r of props.stats.requests) {
