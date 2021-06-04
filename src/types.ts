@@ -3,7 +3,7 @@ export interface Workload {
   kind: WorkloadKind;
   namespace: string;
   name: string;
-  priority: number;
+  affinity: any;
   summary_set?: NestedSummary[];
   stats?: WorkloadStats;
 };
