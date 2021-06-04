@@ -41,10 +41,9 @@ export default function ContainerCard(props: ContainerCardProps) {
   return (
     <div>
       <h3><code>{props.name}</code></h3>
-      <div className={styles.grid}>
-        <MemoryChart stats={props.stats} className={styles.chart} />
-        <CPUChart stats={props.stats} className={styles.chart} />
+      <div className={styles.row}>
         <div>
+          <MemoryChart stats={props.stats} className={styles.chart} />
           {mem && (
             <div>
               {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
@@ -62,6 +61,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           )}
         </div>
         <div>
+          <CPUChart stats={props.stats} className={styles.chart} />
           {cpu && (
             <div>
               {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,

@@ -1,6 +1,9 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.row {
+  display: flex;
+}
+
+.row > * {
+  flex: 1;
 }
 
 .chart {
