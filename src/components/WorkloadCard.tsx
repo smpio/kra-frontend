@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useWorkload } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
+import Editor from './Editor';
 
 interface WorkloadCardProps {
   workload: Workload;
@@ -21,6 +22,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     enabled: inView,
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
+  const [editorVisible, setEditorVisible] = React.useState(false);
 
   let summaryByContainerName: {[cname: string]: NestedSummary} = {};
   if (props.workload.summary_set) {
@@ -55,6 +57,14 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           suggestion={summaryByContainerName[containerName]?.suggestion}
           />
       ))}
+      {props.workload.summary_set && (
+        <div className={styles.actions}>
+          <button onClick={() => setEditorVisible(true)}>Set resources</button>
+        </div>
+      )}
+      {props.workload.summary_set && editorVisible && (
+        <Editor workload={props.workload} onDone={() => setEditorVisible(false)} />
+      )}
     </div>
   );
 }
