@@ -11,7 +11,9 @@ interface PageParams {
 
 export default function WorkloadDetailPage() {
   let {id} = useParams<PageParams>();
-  const {isLoading, error, data} = useWorkload(parseInt(id));
+  const {isLoading, error, data} = useWorkload(parseInt(id), {
+    summary: true,
+  });
 
   if (isLoading) {
     return <LoadingIndicator />;
