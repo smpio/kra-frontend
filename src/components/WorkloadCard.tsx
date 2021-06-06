@@ -55,6 +55,11 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           suggestion={summaryByContainerName[containerName]?.suggestion}
           />
       ))}
+      <div className={styles.actions}>
+        <button>Apply now</button>
+        {' '}
+        <button>Apply tonight</button>
+      </div>
     </div>
   );
 }

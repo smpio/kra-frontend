@@ -25,3 +25,12 @@
   border-radius: 5px;
   padding: 10px;
 }
+
+.actions {
+  padding-left: 35px;
+  margin: 0.5rem 0;
+}
+
+.actions button {
+  font-size: 1.5rem;
+}
