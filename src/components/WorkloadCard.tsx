@@ -24,7 +24,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
 
-  const [newRequests, setNewRequests] = React.useState(Object.fromEntries(props.workload.summary_set?.map(s => (
+  const [adjustments, setAdjustments] = React.useState(Object.fromEntries(props.workload.summary_set?.map(s => (
     [s.container_name, {
       cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
       mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
@@ -37,16 +37,16 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   );
 
   function handleRequestChange(containerName: string, res: 'cpu'|'mem', value: number|null) {
-    setNewRequests(produce(newRequests, draft => {
+    setAdjustments(produce(adjustments, draft => {
       draft[containerName][res] = value;
     }));
   }
 
-  const readyToApply = useMemo(() => Object.entries(newRequests).some(([containerName, request]) => {
-    let summary = summaryByContainerName[containerName];
-    return summary.cpu_request_m !== request.cpu || summary.memory_limit_mi !== request.mem;
+  const readyToApply = useMemo(() => Object.entries(adjustments).some(([cname, a]) => {
+    let summary = summaryByContainerName[cname];
+    return summary.cpu_request_m !== a.cpu || summary.memory_limit_mi !== a.mem;
   }),
-  [newRequests, summaryByContainerName]);
+  [adjustments, summaryByContainerName]);
 
   return (
     <div ref={ref} className={styles.card}>
@@ -71,8 +71,8 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           stats={containerStats}
           summary={summaryByContainerName[containerName]}
           suggestion={summaryByContainerName[containerName]?.suggestion}
-          newMemLimit={newRequests[containerName]?.mem}
-          newCpuRequest={newRequests[containerName]?.cpu}
+          newMemLimit={adjustments[containerName]?.mem}
+          newCpuRequest={adjustments[containerName]?.cpu}
           onMemLimitChange={handleRequestChange.bind(null, containerName, 'mem')}
           onCpuRequestChange={handleRequestChange.bind(null, containerName, 'cpu')}
           />
