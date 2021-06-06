@@ -9,12 +9,13 @@ interface ContainerCardProps {
   stats: ContainerStats;
   summary: BaseSummary;
   suggestion?: BaseSuggestion;
+  newMemLimit?: number|null;
+  newCpuRequest?: number|null;
+  onMemLimitChange?: (value: number|null) => void;
+  onCpuRequestChange?: (value: number|null) => void;
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
-  const [newMemLimit, setNewMemLimit] = React.useState(props.suggestion?.new_memory_limit_mi || props.summary.memory_limit_mi);
-  const [newCpuRequest, setNewCpuRequst] = React.useState(props.suggestion?.new_cpu_request_m || props.summary.cpu_request_m);
-
   let usage = props.stats.usage;
   let mem = null;
   let cpu = null;
@@ -41,6 +42,9 @@ export default function ContainerCard(props: ContainerCardProps) {
     cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
   }
 
+  let setNewMemLimit = props.onMemLimitChange || (() => null);
+  let setNewCpuRequst = props.onCpuRequestChange || (() => null);
+
   return (
     <div className={styles.card}>
       <h3><code>{props.name}</code></h3>
@@ -63,7 +67,7 @@ export default function ContainerCard(props: ContainerCardProps) {
             </div>
           )}
           <div className={styles.form}>
-            <label><input type="number" value={newMemLimit || ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
+            <label><input type="number" value={props.newMemLimit || ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
             {' '}
             <button onClick={() => setNewMemLimit(null)}>(none)</button>
             {props.summary.memory_limit_mi && (
@@ -98,7 +102,7 @@ export default function ContainerCard(props: ContainerCardProps) {
             </div>
           )}
           <div className={styles.form}>
-            <label><input type="number" value={newCpuRequest || ''} onChange={(e) => setNewCpuRequst(parseInt(e.target.value))} /> m</label>
+            <label><input type="number" value={props.newCpuRequest || ''} onChange={(e) => setNewCpuRequst(e.target.value ? parseInt(e.target.value) : null)} /> m</label>
             {' '}
             <button onClick={() => setNewCpuRequst(null)}>(none)</button>
             {props.summary.cpu_request_m && (

@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { useWorkload } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
+import produce from 'immer';
+import classnames from 'classnames';
 
 interface WorkloadCardProps {
   workload: Workload;
@@ -22,6 +24,23 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
 
+  const [newRequests, setNewRequests] = React.useState(() => {
+    let requests: {[cname: string]: {cpu: number|null, mem: number|null}} = {};
+
+    if (!props.workload.summary_set) {
+      return requests;
+    }
+
+    for (let s of props.workload.summary_set) {
+      requests[s.container_name] = {
+        cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
+        mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
+      };
+    }
+
+    return requests;
+  });
+
   let summaryByContainerName: {[cname: string]: NestedSummary} = {};
   if (props.workload.summary_set) {
     summaryByContainerName = props.workload.summary_set.reduce((map, s) => {
@@ -29,6 +48,17 @@ export default function WorkloadCard(props: WorkloadCardProps) {
       return map;
     }, summaryByContainerName);
   };
+
+  function handleRequestChange(containerName: string, res: 'cpu'|'mem', value: number|null) {
+    setNewRequests(produce(newRequests, draft => {
+      draft[containerName][res] = value;
+    }));
+  }
+
+  let readyToApply = Object.entries(newRequests).some(([containerName, request]) => {
+    let summary = summaryByContainerName[containerName];
+    return summary.cpu_request_m !== request.cpu || summary.memory_limit_mi !== request.mem;
+  });
 
   return (
     <div ref={ref} className={styles.card}>
@@ -53,13 +83,22 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           stats={containerStats}
           summary={summaryByContainerName[containerName]}
           suggestion={summaryByContainerName[containerName]?.suggestion}
+          newMemLimit={newRequests[containerName]?.mem}
+          newCpuRequest={newRequests[containerName]?.cpu}
+          onMemLimitChange={handleRequestChange.bind(null, containerName, 'mem')}
+          onCpuRequestChange={handleRequestChange.bind(null, containerName, 'cpu')}
           />
       ))}
-      <div className={styles.actions}>
-        <button>Apply now</button>
-        {' '}
-        <button>Apply tonight</button>
-      </div>
+      {readyToApply && (
+        <div className={classnames({
+          [styles.actions]: true,
+          hidden: !readyToApply,
+        })}>
+          <button>Apply now</button>
+          {' '}
+          <button>Apply tonight</button>
+        </div>
+      )}
     </div>
   );
 }
