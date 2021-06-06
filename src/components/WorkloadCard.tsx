@@ -79,7 +79,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           onCpuRequestChange={handleRequestChange.bind(null, containerName, 'cpu')}
           />
       ))}
-      {readyToApply && (
+      {workload.data?.stats && (
         <div className={classnames({
           [styles.actions]: true,
           hidden: !readyToApply,
