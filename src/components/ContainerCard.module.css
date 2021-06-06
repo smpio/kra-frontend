@@ -26,7 +26,22 @@
 }
 
 .summary,
-.suggestion {
+.suggestion,
+.form {
   padding-left: 35px;
   margin: 0.5rem 0;
+}
+
+.form button {
+  padding: 1px 2px;
+}
+
+.form input[type="number"] {
+  width: 50px;
+}
+
+/* remove input arrows */
+.form input::-webkit-outer-spin-button,
+.form input::-webkit-inner-spin-button {
+  display: none;
 }

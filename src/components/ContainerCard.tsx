@@ -12,6 +12,9 @@ interface ContainerCardProps {
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
+  const [newMemLimit, setNewMemLimit] = React.useState(props.suggestion?.new_memory_limit_mi || props.summary.memory_limit_mi);
+  const [newCpuRequest, setNewCpuRequst] = React.useState(props.suggestion?.new_cpu_request_m || props.summary.cpu_request_m);
+
   let usage = props.stats.usage;
   let mem = null;
   let cpu = null;
@@ -59,6 +62,23 @@ export default function ContainerCard(props: ContainerCardProps) {
               {props.suggestion.memory_reason}
             </div>
           )}
+          <div className={styles.form}>
+            <label><input type="number" value={newMemLimit || ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
+            {' '}
+            <button onClick={() => setNewMemLimit(null)}>(none)</button>
+            {props.summary.memory_limit_mi && (
+              <>
+                {' '}
+                <button onClick={() => props.summary.memory_limit_mi && setNewMemLimit(props.summary.memory_limit_mi)}>{props.summary.memory_limit_mi} (cur)</button>
+              </>
+            )}
+            {props.suggestion?.new_memory_limit_mi && (
+              <>
+                {' '}
+                <button onClick={() => props.suggestion?.new_memory_limit_mi && setNewMemLimit(props.suggestion.new_memory_limit_mi)}>{props.suggestion.new_memory_limit_mi} (sug)</button>
+              </>
+            )}
+          </div>
         </div>
         <div>
           <CPUChart stats={props.stats} className={styles.chart} />
@@ -77,6 +97,23 @@ export default function ContainerCard(props: ContainerCardProps) {
               {props.suggestion.cpu_reason}
             </div>
           )}
+          <div className={styles.form}>
+            <label><input type="number" value={newCpuRequest || ''} onChange={(e) => setNewCpuRequst(parseInt(e.target.value))} /> m</label>
+            {' '}
+            <button onClick={() => setNewCpuRequst(null)}>(none)</button>
+            {props.summary.cpu_request_m && (
+              <>
+                {' '}
+                <button onClick={() => props.summary.cpu_request_m && setNewCpuRequst(props.summary.cpu_request_m)}>{props.summary.cpu_request_m} (cur)</button>
+              </>
+            )}
+            {props.suggestion?.new_cpu_request_m && (
+              <>
+                {' '}
+                <button onClick={() => props.suggestion?.new_cpu_request_m && setNewCpuRequst(props.suggestion.new_cpu_request_m)}>{props.suggestion.new_cpu_request_m} (sug)</button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
