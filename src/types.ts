@@ -94,3 +94,19 @@ export interface Size {
   width: number;
   height: number;
 }
+
+export interface NewAdjustment {
+  workload: number;
+  scheduled_for: Date;
+  containers: ContainerAdjustment[];
+}
+
+export interface Adjustment extends NewAdjustment {
+  id: number;
+}
+
+export interface ContainerAdjustment {
+  container_name: string;
+  new_memory_limit_mi: number|null;
+  new_cpu_request_m: number|null;
+}

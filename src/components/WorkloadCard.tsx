@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import {Workload} from 'types';
+import {Adjustment, NewAdjustment, Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
@@ -12,6 +12,8 @@ import classnames from 'classnames';
 
 interface WorkloadCardProps {
   workload: Workload;
+  scheduledAdjustment?: Adjustment;
+  applyAdjustment?: (params: NewAdjustment) => Promise<Adjustment>;
 };
 
 export default function WorkloadCard(props: WorkloadCardProps) {
@@ -48,6 +50,28 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   }),
   [adjustments, summaryByContainerName]);
 
+  function applyAdjustment(when: 'now'|'tonight') {
+    if (!props.applyAdjustment) {
+      return;
+    }
+
+    let scheduledFor = new Date();
+    if (when === 'tonight') {
+      scheduledFor.setDate(scheduledFor.getDate() + 1);
+      scheduledFor.setHours(2, 0, 0, 0);
+    }
+
+    props.applyAdjustment({
+      workload: props.workload.id,
+      scheduled_for: scheduledFor,
+      containers: Object.entries(adjustments).map(([cname, a]) => ({
+        container_name: cname,
+        new_cpu_request_m: a.cpu,
+        new_memory_limit_mi: a.mem,
+      })),
+    });
+  }
+
   return (
     <div ref={ref} className={styles.card}>
       <h2>
@@ -77,14 +101,14 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           onCpuRequestChange={handleRequestChange.bind(null, containerName, 'cpu')}
           />
       ))}
-      {workload.data?.stats && (
+      {props.applyAdjustment && workload.data?.stats && (
         <div className={classnames({
           [styles.actions]: true,
           hidden: !readyToApply,
         })}>
-          <button>Apply now</button>
+          <button onClick={applyAdjustment.bind(null, 'now')}>Apply now</button>
           {' '}
-          <button>Apply tonight</button>
+          <button onClick={applyAdjustment.bind(null, 'tonight')}>Apply tonight</button>
         </div>
       )}
     </div>
