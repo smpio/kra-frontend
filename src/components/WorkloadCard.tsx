@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import {NestedSummary, Workload} from 'types';
+import {Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
@@ -24,19 +24,17 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
 
-  const [newRequests, setNewRequests] = React.useState(props.workload.summary_set?.reduce((to, s) => {
-    to[s.container_name] = {
+  const [newRequests, setNewRequests] = React.useState(Object.fromEntries(props.workload.summary_set?.map(s => (
+    [s.container_name, {
       cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
       mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
-    };
-    return to;
-  }, {} as {[cname: string]: {cpu: number|null, mem: number|null}}) || {});
+    }]
+  )) || []));
 
-  const summaryByContainerName = useMemo(() => props.workload.summary_set?.reduce((map, s) => {
-    map[s.container_name] = s;
-    return map;
-  }, {} as {[cname: string]: NestedSummary}) || {},
-  [props.workload.summary_set]);
+  const summaryByContainerName = useMemo(
+    () => Object.fromEntries(props.workload.summary_set?.map(s => [s.container_name, s]) || []),
+    [props.workload.summary_set]
+  );
 
   function handleRequestChange(containerName: string, res: 'cpu'|'mem', value: number|null) {
     setNewRequests(produce(newRequests, draft => {
