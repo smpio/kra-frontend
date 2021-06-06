@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {NestedSummary, Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
@@ -24,30 +24,19 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
 
-  const [newRequests, setNewRequests] = React.useState(() => {
-    let requests: {[cname: string]: {cpu: number|null, mem: number|null}} = {};
+  const [newRequests, setNewRequests] = React.useState(props.workload.summary_set?.reduce((to, s) => {
+    to[s.container_name] = {
+      cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
+      mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
+    };
+    return to;
+  }, {} as {[cname: string]: {cpu: number|null, mem: number|null}}) || {});
 
-    if (!props.workload.summary_set) {
-      return requests;
-    }
-
-    for (let s of props.workload.summary_set) {
-      requests[s.container_name] = {
-        cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
-        mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
-      };
-    }
-
-    return requests;
-  });
-
-  let summaryByContainerName: {[cname: string]: NestedSummary} = {};
-  if (props.workload.summary_set) {
-    summaryByContainerName = props.workload.summary_set.reduce((map, s) => {
-      map[s.container_name] = s;
-      return map;
-    }, summaryByContainerName);
-  };
+  const summaryByContainerName = useMemo(() => props.workload.summary_set?.reduce((map, s) => {
+    map[s.container_name] = s;
+    return map;
+  }, {} as {[cname: string]: NestedSummary}) || {},
+  [props.workload.summary_set]);
 
   function handleRequestChange(containerName: string, res: 'cpu'|'mem', value: number|null) {
     setNewRequests(produce(newRequests, draft => {
@@ -55,10 +44,11 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     }));
   }
 
-  let readyToApply = Object.entries(newRequests).some(([containerName, request]) => {
+  const readyToApply = useMemo(() => Object.entries(newRequests).some(([containerName, request]) => {
     let summary = summaryByContainerName[containerName];
     return summary.cpu_request_m !== request.cpu || summary.memory_limit_mi !== request.mem;
-  });
+  }),
+  [newRequests, summaryByContainerName]);
 
   return (
     <div ref={ref} className={styles.card}>
