@@ -1,19 +1,33 @@
-import { Workload, WorkloadStats, Suggestion } from 'types';
+import { Workload, WorkloadStats, Suggestion, NewAdjustment, Adjustment } from 'types';
 import {parseDate} from 'utils';
 
 export const baseUrl = 'http://localhost:8000/';
 
-export async function get(uri: string) {
+export async function request(uri: string, method = 'GET', data?: any) {
+  let headers = {
+    'Accept': 'application/json',
+  } as any;
+  if (data) {
+    headers['Content-Type'] = 'application/json'
+  }
+
   let url = new URL(uri, baseUrl);
-  let response = await fetch(url.toString());
+  let response = await fetch(url.toString(), {
+    method: method,
+    headers: headers,
+    body: data && JSON.stringify(data),
+  });
+
   if (!response.ok) {
     throw new APIError(response);
   }
+
   return response;
 }
 
 export interface WorkloadQueryParams {
   summary?: boolean;
+  adjustments?: boolean;
   stats?: boolean;
   step?: number;
 };
@@ -23,6 +37,9 @@ export async function getWorkload(id: number, options?: WorkloadQueryParams): Pr
   if (options?.summary) {
     params.set('summary', '');
   }
+  if (options?.adjustments) {
+    params.set('adjustments', '');
+  }
   if (options?.stats) {
     params.set('stats', '');
   }
@@ -31,7 +48,7 @@ export async function getWorkload(id: number, options?: WorkloadQueryParams): Pr
   }
   let uri = `workloads/${id}?` + params.toString();
 
-  let workload = await get(uri).then(r => r.json()) as Workload;
+  let workload = await request(uri).then(r => r.json()) as Workload;
   cleanWorkload(workload);
   return workload;
 }
@@ -41,6 +58,9 @@ export async function getWorkloads(options?: WorkloadQueryParams): Promise<Workl
   if (options?.summary) {
     params.set('summary', '');
   }
+  if (options?.adjustments) {
+    params.set('adjustments', '');
+  }
   if (options?.stats) {
     params.set('stats', '');
   }
@@ -49,7 +69,7 @@ export async function getWorkloads(options?: WorkloadQueryParams): Promise<Workl
   }
   let uri = `workloads/?` + params.toString();
 
-  let workloads = await get(uri).then(r => r.json()) as Workload[];
+  let workloads = await request(uri).then(r => r.json()) as Workload[];
   for (let workload of workloads) {
     cleanWorkload(workload);
   }
@@ -57,7 +77,19 @@ export async function getWorkloads(options?: WorkloadQueryParams): Promise<Workl
 }
 
 function cleanWorkload(workload: Workload) {
-  // TODO: parse dates in suggestions
+  if (workload.summary_set) {
+    for (let s of workload.summary_set) {
+      if (s.suggestion) {
+        s.suggestion.done_at = parseDate(s.suggestion.done_at as any);
+      }
+    }
+  }
+
+  if (workload.adjustment_set) {
+    for (let a of workload.adjustment_set) {
+      a.scheduled_for = parseDate(a.scheduled_for as any);
+    }
+  }
 
   if (workload.stats) {
     let stats: WorkloadStats = {};
@@ -116,5 +148,18 @@ export class APIError extends Error {
 
 export function getSuggestions(): Promise<Suggestion[]> {
   // TODO: parse dates
-  return get(`suggestions/`).then(r => r.json()) as Promise<Suggestion[]>;
+  return request('suggestions/').then(r => r.json()) as Promise<Suggestion[]>;
+}
+
+export async function mutateAdjustment(obj: NewAdjustment|Adjustment): Promise<Adjustment> {
+  let r;
+  if ('id' in obj) {
+    r = request(`adjustments/${obj.id}`, 'PUT', obj);
+  } else {
+    r = request('adjustments/', 'POST', obj);
+  }
+  return r.then(r => r.json()).then(adj => {
+    adj.scheduled_for = parseDate(adj.scheduled_for);
+    return adj;
+  }) as Promise<Adjustment>;
 }

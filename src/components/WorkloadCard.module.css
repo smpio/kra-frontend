@@ -19,11 +19,20 @@
   padding: 0 6px;
 }
 
-.affinityInfo {
+.affinityInfo,
+.pendingAdjustmentInfo {
   background-color: #222;
   color: #ddd;
   border-radius: 5px;
   padding: 10px;
+}
+
+.pendingAdjustment {
+  background-color: lightyellow;
+  border: 1px solid silver;
+  border-radius: 5px;
+  font-size: inherit;
+  padding: 0 6px;
 }
 
 .actions {
@@ -33,4 +42,13 @@
 
 .actions button {
   font-size: 1.5rem;
+}
+
+.pendingAdjustmentInfo table {
+  text-align: left;
+  border-spacing: 20px 5px;
+}
+
+.pendingAdjustmentInfo > * + * {
+  margin-top: 10px;
 }

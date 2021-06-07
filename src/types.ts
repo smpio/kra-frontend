@@ -5,6 +5,7 @@ export interface Workload {
   name: string;
   affinity: any;
   summary_set?: NestedSummary[];
+  adjustment_set?: Adjustment[];
   stats?: WorkloadStats;
 };
 
@@ -103,10 +104,18 @@ export interface NewAdjustment {
 
 export interface Adjustment extends NewAdjustment {
   id: number;
+  result: OperationResult|null;
 }
 
 export interface ContainerAdjustment {
   container_name: string;
   new_memory_limit_mi: number|null;
   new_cpu_request_m: number|null;
+}
+
+export interface OperationResult {
+  id: number;
+  finished_at: Date;
+  data: unknown;
+  error: unknown;
 }

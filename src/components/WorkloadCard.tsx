@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import {Adjustment, NewAdjustment, Workload} from 'types';
+import {Workload} from 'types';
 import ContainerCard from './ContainerCard';
 import styles from './WorkloadCard.module.css';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
-import { useWorkload } from 'hooks';
+import { useWorkload, useAdjustmentMutation } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
 import produce from 'immer';
@@ -12,19 +12,19 @@ import classnames from 'classnames';
 
 interface WorkloadCardProps {
   workload: Workload;
-  scheduledAdjustment?: Adjustment;
-  applyAdjustment?: (params: NewAdjustment) => Promise<Adjustment>;
 };
 
 export default function WorkloadCard(props: WorkloadCardProps) {
   const {ref, inView} = useInView();
   const workload = useWorkload(props.workload.id, {
+    adjustments: true,
     stats: true,
     step: 5434,   // TODO: calc from width
   }, {
     enabled: inView,
   });
   const [affinityInfoVisible, setAffinityInfoVisible] = React.useState(false);
+  const [pendingAdjustmentVisible, setPendingAdjustmentVisible] = React.useState(false);
 
   const [adjustments, setAdjustments] = React.useState(Object.fromEntries(props.workload.summary_set?.map(s => (
     [s.container_name, {
@@ -32,6 +32,8 @@ export default function WorkloadCard(props: WorkloadCardProps) {
       mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
     }]
   )) || []));
+
+  const adjustmentMutation = useAdjustmentMutation();
 
   const summaryByContainerName = useMemo(
     () => Object.fromEntries(props.workload.summary_set?.map(s => [s.container_name, s]) || []),
@@ -50,10 +52,12 @@ export default function WorkloadCard(props: WorkloadCardProps) {
   }),
   [adjustments, summaryByContainerName]);
 
+  const pendingAdjustment = useMemo(() =>
+    workload.data?.adjustment_set?.filter(adj => !adj.result)?.[0],
+  [workload.data?.adjustment_set]);
+
   function applyAdjustment(when: 'now'|'tonight') {
-    if (!props.applyAdjustment) {
-      return;
-    }
+    // TODO: update existing adjustment
 
     let scheduledFor = new Date();
     if (when === 'tonight') {
@@ -61,7 +65,8 @@ export default function WorkloadCard(props: WorkloadCardProps) {
       scheduledFor.setHours(2, 0, 0, 0);
     }
 
-    props.applyAdjustment({
+    adjustmentMutation.mutate({
+      id: pendingAdjustment?.id,
       workload: props.workload.id,
       scheduled_for: scheduledFor,
       containers: Object.entries(adjustments).map(([cname, a]) => ({
@@ -101,14 +106,48 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           onCpuRequestChange={handleRequestChange.bind(null, containerName, 'cpu')}
           />
       ))}
-      {props.applyAdjustment && workload.data?.stats && (
-        <div className={classnames({
-          [styles.actions]: true,
-          hidden: !readyToApply,
-        })}>
-          <button onClick={applyAdjustment.bind(null, 'now')}>Apply now</button>
-          {' '}
-          <button onClick={applyAdjustment.bind(null, 'tonight')}>Apply tonight</button>
+      {workload.data && (
+        <div className={styles.actions}>
+          <span className={classnames({hidden: !readyToApply})}>
+            <button onClick={applyAdjustment.bind(null, 'now')} disabled={adjustmentMutation.isLoading}>Apply now</button>
+            {' '}
+            <button onClick={applyAdjustment.bind(null, 'tonight')} disabled={adjustmentMutation.isLoading}>Apply tonight</button>
+          </span>
+          {adjustmentMutation.error && (
+            <>
+              {' '}
+              <ErrorDetail error={adjustmentMutation.error} />
+            </>
+          )}
+          {pendingAdjustment && (
+            <>
+              {' '}
+              <button className={styles.pendingAdjustment} onPointerEnter={() => setPendingAdjustmentVisible(true)} onPointerLeave={() => setPendingAdjustmentVisible(false)}>≡</button>
+            </>
+          )}
+        </div>
+      )}
+      {pendingAdjustment && pendingAdjustmentVisible && (
+        <div className={styles.pendingAdjustmentInfo}>
+          <div>Scheduled for: {pendingAdjustment.scheduled_for.toLocaleString()}</div>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Mem</th>
+                <th>CPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingAdjustment.containers.map(c => (
+                <tr key={c.container_name}>
+                  <td>{c.container_name}</td>
+                  <td>{c.new_memory_limit_mi} Mi</td>
+                  <td>{c.new_cpu_request_m}m</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
