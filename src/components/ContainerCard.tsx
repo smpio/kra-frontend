@@ -64,13 +64,13 @@ export default function ContainerCard(props: ContainerCardProps) {
             <label><input type="number" value={props.newMemLimit || ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
             {' '}
             <button onClick={() => setNewMemLimit(null)}>(none)</button>
-            {props.summary.memory_limit_mi && (
+            {props.summary.memory_limit_mi != null && (
               <>
                 {' '}
                 <button onClick={() => props.summary.memory_limit_mi && setNewMemLimit(props.summary.memory_limit_mi)}>{props.summary.memory_limit_mi} (cur)</button>
               </>
             )}
-            {props.suggestion?.new_memory_limit_mi && (
+            {props.suggestion?.new_memory_limit_mi != null && (
               <>
                 {' '}
                 <button onClick={() => props.suggestion?.new_memory_limit_mi && setNewMemLimit(props.suggestion.new_memory_limit_mi)}>{props.suggestion.new_memory_limit_mi} (sug)</button>
@@ -101,13 +101,13 @@ export default function ContainerCard(props: ContainerCardProps) {
             <label><input type="number" value={props.newCpuRequest || ''} onChange={(e) => setNewCpuRequst(e.target.value ? parseInt(e.target.value) : null)} /> m</label>
             {' '}
             <button onClick={() => setNewCpuRequst(null)}>(none)</button>
-            {props.summary.cpu_request_m && (
+            {props.summary.cpu_request_m != null && (
               <>
                 {' '}
                 <button onClick={() => props.summary.cpu_request_m && setNewCpuRequst(props.summary.cpu_request_m)}>{props.summary.cpu_request_m} (cur)</button>
               </>
             )}
-            {props.suggestion?.new_cpu_request_m && (
+            {props.suggestion?.new_cpu_request_m != null && (
               <>
                 {' '}
                 <button onClick={() => props.suggestion?.new_cpu_request_m && setNewCpuRequst(props.suggestion.new_cpu_request_m)}>{props.suggestion.new_cpu_request_m} (sug)</button>
