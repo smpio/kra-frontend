@@ -16,24 +16,32 @@ export default function Chart(props: ChartProps) {
   const ref = useD3((svg, {width, height}) => {
     let margin = {top: 5, right: 5, bottom: 20, left: 40};
 
+    let x = d3.scaleTime()
+      .domain(d3.extent(props.stats.usage, u => u.measured_at) as [Date, Date])
+      .range([margin.left, width - margin.right]);
+
     let requestPoints = [];
     for (let r of props.stats.requests) {
       let requestValue = r[props.requestValueProp];
-      if (requestValue) {
-        requestPoints.push({
-          time: r.since,
-          value: requestValue,
-        });
-        requestPoints.push({
-          time: r.till || new Date(),
-          value: requestValue,
-        });
+      if (!requestValue) {
+        continue;
       }
+      if (r.till && r.till < x.domain()[0]) {
+        continue;
+      }
+      let since = r.since;
+      if (since < x.domain()[0]) {
+        since = x.domain()[0];
+      }
+      requestPoints.push({
+        time: since,
+        value: requestValue,
+      });
+      requestPoints.push({
+        time: r.till || new Date(),
+        value: requestValue,
+      });
     }
-
-    let x = d3.scaleTime()
-      .domain(d3.extent(props.stats.usage, u => u.measured_at) as [Date, Date]).nice()
-      .range([margin.left, width - margin.right]);
 
     let yDomain = d3.extent(chain(
       props.stats.usage.map(u => u[props.valueProp]),
