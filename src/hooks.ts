@@ -62,6 +62,11 @@ export function useAdjustmentMutation() {
 
       queryClient.setQueriesData<Workload[]>('workloads', workloads => workloads!.map(updateWorkload));
       queryClient.setQueriesData<Workload>(['workload', adj.workload], workload => updateWorkload(workload!));
+
+      let refreshWorkloadAfter = adj.scheduled_for.getTime() - new Date().getTime() + 90000;
+      setTimeout(() => {
+        queryClient.refetchQueries(['workload', adj.workload], {active: true});
+      }, refreshWorkloadAfter);
     }
   });
 }
