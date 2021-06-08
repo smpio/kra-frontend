@@ -40,6 +40,9 @@ export function useAdjustmentMutation() {
   return useMutation(API.mutateAdjustment, {
     onSuccess: adj => {
       function updateWorkload(wl: Workload) {
+        if (!wl) {
+          return wl;
+        }
         if (wl.id !== adj.workload || !wl.adjustment_set) {
           return wl;
         }
@@ -57,17 +60,8 @@ export function useAdjustmentMutation() {
         }
       }
 
-      queryClient.setQueriesData<Workload[]>({
-        queryKey: 'workloads',
-        inactive: false,
-        fetching: false,
-      }, workloads => workloads!.map(updateWorkload));
-
-      queryClient.setQueriesData<Workload>({
-        queryKey: 'workload',
-        inactive: false,
-        fetching: false,
-      }, workload => updateWorkload(workload!));
+      queryClient.setQueriesData<Workload[]>('workloads', workloads => workloads!.map(updateWorkload));
+      queryClient.setQueriesData<Workload>(['workload', adj.workload], workload => updateWorkload(workload!));
     }
   });
 }
