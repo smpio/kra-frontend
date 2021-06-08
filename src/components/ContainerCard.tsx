@@ -1,12 +1,12 @@
+import React from 'react';
 import {ContainerStats, BaseSummary, BaseSuggestion} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
-import React from 'react';
 
 interface ContainerCardProps {
   name: string;
-  stats: ContainerStats;
+  stats?: ContainerStats;
   summary: BaseSummary;
   suggestion?: BaseSuggestion;
   newMemLimit?: number|null;
@@ -16,31 +16,23 @@ interface ContainerCardProps {
 };
 
 export default function ContainerCard(props: ContainerCardProps) {
-  let usage = props.stats.usage;
-  let mem = null;
-  let cpu = null;
+  let mem = {
+    max: props.summary.max_memory_mi,
+    mean: props.summary.avg_memory_mi,
+    stdDev: props.summary.stddev_memory_mi,
+    stdDevPercent: 0,
+    limit: props.summary.memory_limit_mi,
+  };
+  mem.stdDevPercent = mem.stdDev / mem.mean * 100;
 
-  if (usage.length > 0) {
-    mem = {
-      max: props.summary.max_memory_mi,
-      mean: props.summary.avg_memory_mi,
-      stdDev: props.summary.stddev_memory_mi,
-      stdDevPercent: 0,
-      limit: props.summary.memory_limit_mi,
-    };
-
-    mem.stdDevPercent = mem.stdDev / mem.mean * 100;
-
-    cpu = {
-      max: props.summary.max_cpu_m,
-      mean: props.summary.avg_cpu_m,
-      stdDev: props.summary.stddev_cpu_m,
-      stdDevPercent: 0,
-      request: props.summary.cpu_request_m,
-    };
-
-    cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
-  }
+  let cpu = {
+    max: props.summary.max_cpu_m,
+    mean: props.summary.avg_cpu_m,
+    stdDev: props.summary.stddev_cpu_m,
+    stdDevPercent: 0,
+    request: props.summary.cpu_request_m,
+  };
+  cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
 
   let setNewMemLimit = props.onMemLimitChange || (() => null);
   let setNewCpuRequst = props.onCpuRequestChange || (() => null);
@@ -50,7 +42,9 @@ export default function ContainerCard(props: ContainerCardProps) {
       <h3><code>{props.name}</code></h3>
       <div className={styles.row}>
         <div>
-          <MemoryChart stats={props.stats} className={styles.chart} />
+          <div className={styles.chartContainer}>
+            {props.stats && <MemoryChart stats={props.stats} className={styles.chart} />}
+          </div>
           {mem && (
             <div className={styles.summary}>
               {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
@@ -85,7 +79,9 @@ export default function ContainerCard(props: ContainerCardProps) {
           </div>
         </div>
         <div>
-          <CPUChart stats={props.stats} className={styles.chart} />
+          <div className={styles.chartContainer}>
+            {props.stats && <CPUChart stats={props.stats} className={styles.chart} />}
+          </div>
           {cpu && (
             <div className={styles.summary}>
               {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,

@@ -1,5 +1,5 @@
 import React from 'react';
-import WorkloadCard from './WorkloadCard';
+import WorkloadCardLoader from './WorkloadCardLoader';
 import { useWorkloads } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorDetail from './ErrorDetail';
@@ -19,7 +19,7 @@ export default function WorkloadListPage() {
       {isLoading && <LoadingIndicator />}
       {error && <ErrorDetail error={error} />}
       {workloads.map(workload => (
-        <WorkloadCard key={workload.id} workload={workload} />
+        <WorkloadCardLoader key={workload.id} workload={workload} />
       ))}
     </div>
   );

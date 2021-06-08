@@ -1,5 +1,5 @@
 import React from 'react';
-import WorkloadCard from './WorkloadCard';
+import WorkloadCardLoader from './WorkloadCard';
 import {useParams} from "react-router-dom";
 import { useWorkload } from 'hooks';
 import LoadingIndicator from './LoadingIndicator';
@@ -15,17 +15,11 @@ export default function WorkloadDetailPage() {
     summary: true,
   });
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) {
-    return <ErrorDetail error={error} />;
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return <WorkloadCard workload={data} />;
+  return (
+    <div>
+      {isLoading && <LoadingIndicator />}
+      {error && <ErrorDetail error={error} />}
+      {data && <WorkloadCardLoader workload={data} />}
+    </div>
+  );
 }
