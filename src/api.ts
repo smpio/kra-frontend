@@ -153,7 +153,7 @@ export function getSuggestions(): Promise<Suggestion[]> {
 
 export async function mutateAdjustment(obj: NewAdjustment|Adjustment): Promise<Adjustment> {
   let r;
-  if ('id' in obj) {
+  if ('id' in obj && obj.id) {
     r = request(`adjustments/${obj.id}`, 'PUT', obj);
   } else {
     r = request('adjustments/', 'POST', obj);

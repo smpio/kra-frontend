@@ -9,6 +9,9 @@ import { max } from 'math';
 export default function WorkloadListPage() {
   const {isLoading, error, data} = useWorkloads({
     summary: true,
+  }, {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   let sortKey = (wl: Workload) => max([0, ...wl.summary_set?.map(s => s.suggestion?.priority || 0) || [0]]);
@@ -19,7 +22,7 @@ export default function WorkloadListPage() {
       {isLoading && <LoadingIndicator />}
       {error && <ErrorDetail error={error} />}
       {workloads.map(workload => (
-        <WorkloadCardLoader key={workload.id} workload={workload} />
+        <WorkloadCardLoader key={workload.id} workloadId={workload.id} workload={workload} />
       ))}
     </div>
   );

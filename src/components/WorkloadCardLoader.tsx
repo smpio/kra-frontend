@@ -8,12 +8,13 @@ import WorkloadCard from './WorkloadCard';
 import styles from './WorkloadCardLoader.module.css';
 
 interface WorkloadCardLoaderProps {
-  workload: Workload;
+  workloadId: number;
+  workload?: Workload;
 };
 
 export default function WorkloadCardLoader(props: WorkloadCardLoaderProps) {
   const {ref, inView} = useInView();
-  const workloadQuery = useWorkload(props.workload.id, {
+  const workloadQuery = useWorkload(props.workloadId, {
     summary: true,
     adjustments: true,
     stats: true,
