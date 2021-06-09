@@ -64,7 +64,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           </div>
           {mem && (
             <div className={styles.summary}>
-              {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
+              {mem.max} {mem.limit !== null && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
               mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
               {importantOOM && (
                 <div>
@@ -106,7 +106,7 @@ export default function ContainerCard(props: ContainerCardProps) {
           </div>
           {cpu && (
             <div className={styles.summary}>
-              {cpu.max} {cpu.request && <span className={styles.limit}>/ {cpu.request}</span>} m,
+              {cpu.max} {cpu.request !== null && <span className={styles.limit}>/ {cpu.request}</span>} m,
               mean: {cpu.mean} m, stdDev: {cpu.stdDev} m ({cpu.stdDevPercent.toFixed(2)}%)
             </div>
           )}
