@@ -24,11 +24,13 @@ export default function WorkloadCardLoader(props: WorkloadCardLoaderProps) {
     placeholderData: props.workload,
   });
 
+  const workload = workloadQuery.data || props.workload;
+
   return (
     <div ref={ref} className={styles.loader}>
       {workloadQuery.isLoading && <LoadingIndicator />}
       {workloadQuery.error && <ErrorDetail error={workloadQuery.error} />}
-      {workloadQuery.data && <WorkloadCard workload={workloadQuery.data} />}
+      {workload && <WorkloadCard workload={workload} />}
     </div>
   );
 }
