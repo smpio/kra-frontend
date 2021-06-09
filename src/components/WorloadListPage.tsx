@@ -14,8 +14,8 @@ export default function WorkloadListPage() {
     refetchOnReconnect: false,
   });
 
-  let sortKey = (wl: Workload) => max([0, ...wl.summary_set?.map(s => s.suggestion?.priority || 0) || [0]]);
-  let workloads = data?.sort((a, b) => sortKey(b) - sortKey(a)) || [];
+  let sortKey = (wl: Workload) => max([0, ...wl.summary_set?.map(s => s.suggestion?.priority ?? 0) ?? [0]]);
+  let workloads = data?.sort((a, b) => sortKey(b) - sortKey(a)) ?? [];
 
   return (
     <div>

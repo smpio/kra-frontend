@@ -20,10 +20,10 @@ export default function WorkloadCard(props: WorkloadCardProps) {
 
   const [adjustments, setAdjustments] = React.useState(Object.fromEntries(wl.summary_set?.map(s => (
     [s.container_name, {
-      cpu: s.suggestion?.new_cpu_request_m || s.cpu_request_m,
-      mem: s.suggestion?.new_memory_limit_mi || s.memory_limit_mi,
+      cpu: s.suggestion?.new_cpu_request_m ?? s.cpu_request_m,
+      mem: s.suggestion?.new_memory_limit_mi ?? s.memory_limit_mi,
     }]
-  )) || []));
+  )) ?? []));
 
   const adjustmentMutation = useAdjustmentMutation();
 

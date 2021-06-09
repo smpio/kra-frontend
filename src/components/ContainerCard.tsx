@@ -34,8 +34,8 @@ export default function ContainerCard(props: ContainerCardProps) {
   };
   cpu.stdDevPercent = cpu.stdDev / cpu.mean * 100;
 
-  let setNewMemLimit = props.onMemLimitChange || (() => null);
-  let setNewCpuRequst = props.onCpuRequestChange || (() => null);
+  let setNewMemLimit = props.onMemLimitChange ?? (() => null);
+  let setNewCpuRequst = props.onCpuRequestChange ?? (() => null);
 
   const importantOOM = React.useMemo(() => {
     if (!props.stats) {
@@ -44,7 +44,7 @@ export default function ContainerCard(props: ContainerCardProps) {
 
     let decoradedOOMs = props.stats.oom_events.map(oom => ({
       ...oom,
-      memory_limit_mi: props.stats?.requests.find(r => r.since < oom.happened_at && (!r.till || oom.happened_at < r.till))?.memory_limit_mi || 0,
+      memory_limit_mi: props.stats?.requests.find(r => r.since < oom.happened_at && (!r.till || oom.happened_at < r.till))?.memory_limit_mi ?? 0,
     }));
 
     if (!decoradedOOMs) {
@@ -77,13 +77,13 @@ export default function ContainerCard(props: ContainerCardProps) {
             <div className={styles.suggestion}>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set memory limit to {props.suggestion.new_memory_limit_mi} Mi
-              (current: {props.summary.memory_limit_mi || 'not set'})
+              (current: {props.summary.memory_limit_mi ?? 'not set'})
               <br/>
               {props.suggestion.memory_reason}
             </div>
           )}
           <div className={styles.form}>
-            <label><input type="number" value={props.newMemLimit || ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
+            <label><input type="number" value={props.newMemLimit ?? ''} onChange={(e) => setNewMemLimit(parseInt(e.target.value))} /> Mi</label>
             {' '}
             <button onClick={() => setNewMemLimit(null)}>(none)</button>
             {props.summary.memory_limit_mi != null && (
@@ -114,13 +114,13 @@ export default function ContainerCard(props: ContainerCardProps) {
             <div className={styles.suggestion}>
               <b>Suggestion</b> (priority {props.suggestion.priority}):<br/>
               set CPU request to {props.suggestion.new_cpu_request_m}m
-              (current: {props.summary.cpu_request_m || 'not set'})
+              (current: {props.summary.cpu_request_m ?? 'not set'})
               <br/>
               {props.suggestion.cpu_reason}
             </div>
           )}
           <div className={styles.form}>
-            <label><input type="number" value={props.newCpuRequest || ''} onChange={(e) => setNewCpuRequst(e.target.value ? parseInt(e.target.value) : null)} /> m</label>
+            <label><input type="number" value={props.newCpuRequest ?? ''} onChange={(e) => setNewCpuRequst(e.target.value ? parseInt(e.target.value) : null)} /> m</label>
             {' '}
             <button onClick={() => setNewCpuRequst(null)}>(none)</button>
             {props.summary.cpu_request_m != null && (

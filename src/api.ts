@@ -103,7 +103,7 @@ function cleanWorkload(workload: Workload) {
         requests: containerStats.requests.map(r => ({
           ...r,
           since: parseDate(r.since as any),
-          till: parseDate(r.till as any) || null,
+          till: parseDate(r.till as any) ?? null,
         })),
         oom_events: containerStats.oom_events.map(e => ({
           ...e,

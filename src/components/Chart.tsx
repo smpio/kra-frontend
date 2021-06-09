@@ -38,7 +38,7 @@ export default function Chart(props: ChartProps) {
         value: requestValue,
       });
       requestPoints.push({
-        time: r.till || new Date(),
+        time: r.till ?? new Date(),
         value: requestValue,
       });
     }
