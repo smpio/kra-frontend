@@ -17,6 +17,7 @@ export interface ContainerStats {
   requests: ResourceRequest[];
   usage: ResourceUsage[];
   oom_events: OOMEvent[];
+  is_running?: boolean;
 };
 
 export interface ResourceRequest {

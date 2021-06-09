@@ -61,6 +61,8 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     });
   }
 
+  const isRunning = wl.stats ? Object.values(wl.stats).some(s => s.is_running) : true;
+
   return (
     <div className={styles.card}>
       <h2>
@@ -69,6 +71,12 @@ export default function WorkloadCard(props: WorkloadCardProps) {
           <>
             {' '}
             <button className={styles.affinity} onPointerEnter={() => setAffinityInfoVisible(true)} onPointerLeave={() => setAffinityInfoVisible(false)}>≡</button>
+          </>
+        )}
+        {!isRunning && (
+          <>
+            {' '}
+            <button className={styles.gone}>gone</button>
           </>
         )}
       </h2>

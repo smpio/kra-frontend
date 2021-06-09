@@ -7,12 +7,20 @@
   margin: 1rem 0;
 }
 
-.affinity {
-  background-color: lightgreen;
+.affinity,
+.gone {
   border: 1px solid silver;
   border-radius: 5px;
   font-size: inherit;
   padding: 0 6px;
+}
+
+.affinity {
+  background-color: lightgreen;
+}
+
+.gone {
+  background-color: pink;
 }
 
 .affinityInfo,

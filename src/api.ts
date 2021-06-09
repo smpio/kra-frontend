@@ -109,6 +109,7 @@ function cleanWorkload(workload: Workload) {
           ...e,
           happened_at: parseDate(e.happened_at as any),
         })),
+        is_running: containerStats.is_running,
       }
     }
 
