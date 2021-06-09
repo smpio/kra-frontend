@@ -37,6 +37,23 @@ export default function ContainerCard(props: ContainerCardProps) {
   let setNewMemLimit = props.onMemLimitChange || (() => null);
   let setNewCpuRequst = props.onCpuRequestChange || (() => null);
 
+  const importantOOM = React.useMemo(() => {
+    if (!props.stats) {
+      return null;
+    }
+
+    let decoradedOOMs = props.stats.oom_events.map(oom => ({
+      ...oom,
+      memory_limit_mi: props.stats?.requests.find(r => r.since < oom.happened_at && (!r.till || oom.happened_at < r.till))?.memory_limit_mi || 0,
+    }));
+
+    if (!decoradedOOMs) {
+      return null;
+    }
+
+    return decoradedOOMs.sort((a, b) => b.memory_limit_mi - a.memory_limit_mi)[0];
+  }, [props.stats]);
+
   return (
     <div className={styles.card}>
       <h3><code>{props.name}</code></h3>
@@ -49,6 +66,11 @@ export default function ContainerCard(props: ContainerCardProps) {
             <div className={styles.summary}>
               {mem.max} {mem.limit && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
               mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
+              {importantOOM && (
+                <div>
+                  OOM @ {importantOOM.happened_at.toLocaleString()}, {importantOOM.memory_limit_mi} Mi limit
+                </div>
+              )}
             </div>
           )}
           {props.suggestion?.new_memory_limit_mi != null && (
