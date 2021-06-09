@@ -35,6 +35,7 @@ export default function MemoryChart(props: MemoryChartProps) {
     stats={props.stats}
     valueProp="memory_mi"
     requestValueProp="memory_limit_mi"
+    yAxisLabel="Mi"
     postRender={postRender}
     />;
 }

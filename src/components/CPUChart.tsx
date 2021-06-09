@@ -13,5 +13,6 @@ export default function CPUChart(props: CPUChartProps) {
     stats={props.stats}
     valueProp="cpu_m"
     requestValueProp="cpu_request_m"
+    yAxisLabel="m"
     />;
 }

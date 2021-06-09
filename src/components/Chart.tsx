@@ -8,6 +8,7 @@ interface ChartProps {
   stats: ContainerStats;
   valueProp: 'memory_mi' | 'cpu_m';
   requestValueProp: 'memory_limit_mi' | 'cpu_request_m';
+  yAxisLabel?: string;
   postRender?: ChartRenderFunc;
   className?: string;
 };
@@ -56,15 +57,22 @@ export default function Chart(props: ChartProps) {
       .attr('transform', `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0));
 
-    let yAxis = (g: D3GElement) => g
+    let yAxisBase = (g: D3GElement) => g
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(y))
-      .call(g => g.select('.domain').remove())
-      .call(g => g.select('.tick:last-of-type text').clone()
-        .attr('x', 3)
-        .attr('text-anchor', 'start')
-        .attr('font-weight', 'bold')
-        .text('Mi'));
+      .call(g => g.select('.domain').remove());
+
+    let yAxis;
+    if (props.yAxisLabel) {
+      yAxis = (g: D3GElement) => yAxisBase(g)
+        .call(g => g.select('.tick:last-of-type text').clone()
+          .attr('x', 3)
+          .attr('text-anchor', 'start')
+          .attr('font-weight', 'bold')
+          .text(props.yAxisLabel ?? ''));
+    } else {
+      yAxis = yAxisBase;
+    }
 
     let usageLine = d3.line<typeof props.stats.usage[0]>()
       .defined(u => !isNaN(u[props.valueProp]))
