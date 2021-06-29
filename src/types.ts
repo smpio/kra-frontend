@@ -29,7 +29,7 @@ export interface BaseContainer {
   name: string;
   runtime_id: string;
   started_at: Date;
-  finished_at: Date;
+  finished_at?: Date;
   memory_limit_mi: number|null;
   cpu_request_m: number|null;
   oomevent_set: NestedOOMEvent[];

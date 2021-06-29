@@ -3,6 +3,7 @@ import {BaseContainer, ResourceUsageBucket, D3GElement, ChartRenderFunc} from 't
 import * as d3 from 'd3';
 import {chain} from 'utils';
 import {useD3} from 'hooks';
+import palette from 'palette';
 
 interface ChartProps {
   containers: BaseContainer[];
@@ -82,7 +83,15 @@ export default function Chart(props: ChartProps) {
     svg.append('g')
       .call(yAxis);
 
+    let usageIntervals: [number,number][] = [];
+    let intervalsEnd = new Date().getTime();
+
     for (let c of props.containers) {
+      let interval: [number,number] = [c.started_at.getTime(), c.finished_at?.getTime() ?? intervalsEnd];
+      let colorIdx = countIntersections(usageIntervals, interval);
+      let color = palette[colorIdx % palette.length];
+      usageIntervals.push(interval);
+
       let usageLine = d3.line<ResourceUsageBucket>()
         .defined(b => !isNaN(b[props.valueProp]))
         .x(b => x(b[0]))
@@ -91,8 +100,8 @@ export default function Chart(props: ChartProps) {
       svg.append('path')
         .datum(c.resource_usage_buckets!)
         .attr('fill', 'none')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 1.5)
+        .attr('stroke', color)
+        .attr('stroke-width', 1)
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
         .attr('d', usageLine);
@@ -124,4 +133,16 @@ export default function Chart(props: ChartProps) {
   }, [props.containers, props.valueProp, props.requestValueProp, props.postRender]);
 
   return <svg ref={ref} className={props.className} />;
+}
+
+let ALLOWED_INTERSECTION = 5 * 60 * 1000;
+
+function countIntersections<T extends number>(intervals: [T,T][], interval: [T,T]) {
+  let counter = 0;
+  for (let interval2 of intervals) {
+    if (interval[0] < (interval2[1] - ALLOWED_INTERSECTION) && interval[1] > (interval2[0] + ALLOWED_INTERSECTION)) {
+      counter++;
+    }
+  }
+  return counter;
 }
