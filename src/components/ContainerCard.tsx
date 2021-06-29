@@ -1,12 +1,12 @@
 import React from 'react';
-import {ContainerStats, BaseSummary, BaseSuggestion} from 'types';
+import {BaseSummary, BaseSuggestion, BaseContainer} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
 
 interface ContainerCardProps {
   name: string;
-  stats?: ContainerStats;
+  containers?: BaseContainer[];
   summary: BaseSummary;
   suggestion?: BaseSuggestion;
   newMemLimit?: number|null;
@@ -38,21 +38,21 @@ export default function ContainerCard(props: ContainerCardProps) {
   let setNewCpuRequst = props.onCpuRequestChange ?? (() => null);
 
   const importantOOM = React.useMemo(() => {
-    if (!props.stats) {
+    if (!props.containers) {
       return null;
     }
-
-    let decoradedOOMs = props.stats.oom_events.map(oom => ({
-      ...oom,
-      memory_limit_mi: props.stats?.requests.find(r => r.since < oom.happened_at && (!r.till || oom.happened_at < r.till))?.memory_limit_mi ?? 0,
-    }));
-
-    if (!decoradedOOMs) {
+    var containersWithOOM = props.containers.filter(c => c.memory_limit_mi != null && c.oomevent_set.length > 0);
+    if (containersWithOOM.length === 0) {
       return null;
     }
+    containersWithOOM.sort((a, b) => b.memory_limit_mi! - a.memory_limit_mi!);
+    return {
+      memory_limit_mi: containersWithOOM[0].memory_limit_mi,
+      happened_at: containersWithOOM[0].oomevent_set[0].happened_at,
+    };
+  }, [props.containers]);
 
-    return decoradedOOMs.sort((a, b) => b.memory_limit_mi - a.memory_limit_mi)[0];
-  }, [props.stats]);
+  const hasUsage = !!props.containers?.[0]?.resource_usage_buckets;
 
   return (
     <div className={styles.card}>
@@ -60,7 +60,7 @@ export default function ContainerCard(props: ContainerCardProps) {
       <div className={styles.row}>
         <div>
           <div className={styles.chartContainer}>
-            {props.stats && <MemoryChart stats={props.stats} className={styles.chart} />}
+            {hasUsage && <MemoryChart containers={props.containers!} className={styles.chart} />}
           </div>
           {mem && (
             <div className={styles.summary}>
@@ -102,7 +102,7 @@ export default function ContainerCard(props: ContainerCardProps) {
         </div>
         <div>
           <div className={styles.chartContainer}>
-            {props.stats && <CPUChart stats={props.stats} className={styles.chart} />}
+            {hasUsage && <CPUChart containers={props.containers!} className={styles.chart} />}
           </div>
           {cpu && (
             <div className={styles.summary}>

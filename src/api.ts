@@ -1,4 +1,4 @@
-import { Workload, WorkloadStats, Suggestion, NewAdjustment, Adjustment } from 'types';
+import { Workload, Suggestion, NewAdjustment, Adjustment } from 'types';
 import {parseDate} from 'utils';
 
 export const baseUrl = 'http://localhost:8000/';
@@ -28,7 +28,8 @@ export async function request(uri: string, method = 'GET', data?: any) {
 export interface WorkloadQueryParams {
   summary?: boolean;
   adjustments?: boolean;
-  stats?: boolean;
+  pods?: boolean;
+  usage?: boolean;
   step?: number;
 };
 
@@ -40,8 +41,11 @@ export async function getWorkload(id: number, options?: WorkloadQueryParams): Pr
   if (options?.adjustments) {
     params.set('adjustments', '');
   }
-  if (options?.stats) {
-    params.set('stats', '');
+  if (options?.pods) {
+    params.set('pods', '');
+  }
+  if (options?.usage) {
+    params.set('usage', '');
   }
   if (options?.step) {
     params.set('step', options.step.toString());
@@ -61,8 +65,11 @@ export async function getWorkloads(options?: WorkloadQueryParams): Promise<Workl
   if (options?.adjustments) {
     params.set('adjustments', '');
   }
-  if (options?.stats) {
-    params.set('stats', '');
+  if (options?.pods) {
+    params.set('pods', '');
+  }
+  if (options?.usage) {
+    params.set('usage', '');
   }
   if (options?.step) {
     params.set('step', options.step.toString());
@@ -91,44 +98,36 @@ function cleanWorkload(workload: Workload) {
     }
   }
 
-  if (workload.stats) {
-    let stats: WorkloadStats = {};
+  if (workload.pod_set) {
+    for (let pod of workload.pod_set) {
+      pod.started_at = parseDate(pod.started_at as any);
+      pod.gone_at = parseDate(pod.gone_at as any);
 
-    for (let [containerName, containerStats] of Object.entries(workload.stats)) {
-      stats[containerName] = {
-        usage: containerStats.usage.map(u => ({
-          ...u,
-          measured_at: parseDate(u.measured_at as any),
-        })),
-        requests: containerStats.requests.map(r => ({
-          ...r,
-          since: parseDate(r.since as any),
-          till: parseDate(r.till as any) ?? null,
-        })),
-        oom_events: containerStats.oom_events.map(e => ({
-          ...e,
-          happened_at: parseDate(e.happened_at as any),
-        })),
-        is_running: containerStats.is_running,
+      for (let c of pod.container_set) {
+        c.started_at = parseDate(c.started_at as any);
+        c.finished_at = parseDate(c.finished_at as any);
+
+        for (let oom of c.oomevent_set) {
+          oom.happened_at = parseDate(oom.happened_at as any);
+        }
+
+        if (c.resource_usage_buckets) {
+          for (let bucket of c.resource_usage_buckets) {
+            bucket[0] = parseDate(bucket[0] as any);
+          }
+          c.resource_usage_buckets = c.resource_usage_buckets.map((bucket, idx) => {
+            var cpu_m = NaN;
+            if (idx > 0) {
+              let prev = c.resource_usage_buckets![idx-1];
+              if (bucket[2] > prev[2]) {
+                cpu_m = 1000 * (bucket[2] - prev[2]) / (bucket[0].getTime() - prev[0].getTime());
+              }
+            }
+            return [bucket[0], bucket[1], cpu_m];
+          });
+        }
       }
     }
-
-    for (let containerStats of Object.values(stats)) {
-      containerStats.usage.forEach((u, idx) => {
-        if (idx === 0) {
-          u.cpu_m = NaN;
-        } else {
-          let prev = containerStats.usage[idx-1];
-          if (u.cpu_m_seconds > prev.cpu_m_seconds) {
-            u.cpu_m = 1000 * (u.cpu_m_seconds - prev.cpu_m_seconds) / (u.measured_at.getTime() - prev.measured_at.getTime());
-          } else {
-            u.cpu_m = NaN;
-          }
-        }
-      });
-    }
-
-    workload.stats = stats;
   }
 }
 

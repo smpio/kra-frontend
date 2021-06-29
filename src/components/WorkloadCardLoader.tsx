@@ -17,7 +17,8 @@ export default function WorkloadCardLoader(props: WorkloadCardLoaderProps) {
   const workloadQuery = useWorkload(props.workloadId, {
     summary: true,
     adjustments: true,
-    stats: true,
+    pods: true,
+    usage: true,
     step: 5434,   // TODO: calc from width
   }, {
     enabled: inView,

@@ -1,12 +1,12 @@
 import React from 'react';
-import {ContainerStats, D3GElement, ChartRenderFunc} from 'types';
+import {BaseContainer, ResourceUsageBucket, D3GElement, ChartRenderFunc} from 'types';
 import * as d3 from 'd3';
 import {chain} from 'utils';
 import {useD3} from 'hooks';
 
 interface ChartProps {
-  stats: ContainerStats;
-  valueProp: 'memory_mi' | 'cpu_m';
+  containers: BaseContainer[];
+  valueProp: 1 | 2;
   requestValueProp: 'memory_limit_mi' | 'cpu_request_m';
   yAxisLabel?: string;
   postRender?: ChartRenderFunc;
@@ -15,22 +15,24 @@ interface ChartProps {
 
 export default function Chart(props: ChartProps) {
   const ref = useD3((svg, {width, height}) => {
+    if (!props.containers[0]?.resource_usage_buckets) return;
+
     let margin = {top: 5, right: 5, bottom: 20, left: 40};
 
     let x = d3.scaleTime()
-      .domain(d3.extent(props.stats.usage, u => u.measured_at) as [Date, Date])
+      .domain(d3.extent(props.containers.flatMap(c => c.resource_usage_buckets!), b => b[0]) as [Date, Date])
       .range([margin.left, width - margin.right]);
 
     let requestPoints = [];
-    for (let r of props.stats.requests) {
-      let requestValue = r[props.requestValueProp];
+    for (let c of props.containers) {
+      let requestValue = c[props.requestValueProp];
       if (!requestValue) {
         continue;
       }
-      if (r.till && r.till < x.domain()[0]) {
+      if (c.finished_at && c.finished_at < x.domain()[0]) {
         continue;
       }
-      let since = r.since;
+      let since = c.started_at;
       if (since < x.domain()[0]) {
         since = x.domain()[0];
       }
@@ -39,14 +41,14 @@ export default function Chart(props: ChartProps) {
         value: requestValue,
       });
       requestPoints.push({
-        time: r.till ?? new Date(),
+        time: c.finished_at ?? new Date(),
         value: requestValue,
       });
     }
 
     let yDomain = d3.extent(chain(
-      props.stats.usage.map(u => u[props.valueProp]),
-      requestPoints.map(r => r.value),
+      props.containers.flatMap(c => c.resource_usage_buckets!).map(u => u[props.valueProp]),
+      props.containers.map(c => c[props.requestValueProp] ?? NaN),
     )) as [number, number];
 
     let y = d3.scaleLinear()
@@ -74,43 +76,52 @@ export default function Chart(props: ChartProps) {
       yAxis = yAxisBase;
     }
 
-    let usageLine = d3.line<typeof props.stats.usage[0]>()
-      .defined(u => !isNaN(u[props.valueProp]))
-      .x(u => x(u.measured_at))
-      .y(u => y(u[props.valueProp]));
-
-    let requestsLine = d3.line<typeof requestPoints[0]>()
-      .x(r => x(r.time))
-      .y(r => y(r.value));
-
     svg.append('g')
       .call(xAxis);
 
     svg.append('g')
       .call(yAxis);
 
-    svg.append('path')
-      .datum(props.stats.usage)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', usageLine);
+    for (let c of props.containers) {
+      let usageLine = d3.line<ResourceUsageBucket>()
+        .defined(b => !isNaN(b[props.valueProp]))
+        .x(b => x(b[0]))
+        .y(b => y(b[props.valueProp]));
 
-    svg.append('path')
-      .datum(requestPoints)
-      .attr('fill', 'none')
-      .attr('stroke', 'orange')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', requestsLine);
+      svg.append('path')
+        .datum(c.resource_usage_buckets!)
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('d', usageLine);
+
+      let requestValue = c[props.requestValueProp];
+      if (requestValue && (!c.finished_at || c.finished_at > x.domain()[0])) {
+        let since = c.started_at;
+        if (since < x.domain()[0]) {
+          since = x.domain()[0];
+        }
+
+        svg.append('path')
+          .datum([
+            [x(since), y(requestValue)],
+            [x(c.finished_at ?? new Date()), y(requestValue)],
+          ] as [number,number][])
+          .attr('fill', 'none')
+          .attr('stroke', 'orange')
+          .attr('stroke-width', 1.5)
+          .attr('stroke-linejoin', 'round')
+          .attr('stroke-linecap', 'round')
+          .attr('d', d3.line());
+      }
+    }
 
     if (props.postRender) {
       props.postRender(svg, {width, height}, {x, y});
     }
-  }, [props.stats, props.valueProp, props.requestValueProp, props.postRender]);
+  }, [props.containers, props.valueProp, props.requestValueProp, props.postRender]);
 
   return <svg ref={ref} className={props.className} />;
 }

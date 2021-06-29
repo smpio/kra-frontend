@@ -1,17 +1,17 @@
 import React from 'react';
-import {ContainerStats} from 'types';
+import {BaseContainer} from 'types';
 import Chart from './Chart';
 
 interface CPUChartProps {
-  stats: ContainerStats;
+  containers: BaseContainer[];
   className?: string;
 };
 
 export default function CPUChart(props: CPUChartProps) {
   return <Chart
     className={props.className}
-    stats={props.stats}
-    valueProp="cpu_m"
+    containers={props.containers}
+    valueProp={2}
     requestValueProp="cpu_request_m"
     yAxisLabel="m"
     />;

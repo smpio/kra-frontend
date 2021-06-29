@@ -61,7 +61,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
     });
   }
 
-  const isRunning = wl.stats ? Object.values(wl.stats).some(s => s.is_running) : true;
+  const isRunning = wl.pod_set ? wl.pod_set.some(pod => pod.gone_at == null) : true;
 
   return (
     <div className={styles.card}>
@@ -87,7 +87,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
         <ContainerCard
           key={s.container_name}
           name={s.container_name}
-          stats={wl.stats?.[s.container_name]}
+          containers={wl.pod_set?.flatMap(pod => pod.container_set.filter(c => c.name === s.container_name))}
           summary={s}
           suggestion={s.suggestion}
           newMemLimit={adjustments[s.container_name].mem}

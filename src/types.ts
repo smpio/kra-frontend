@@ -6,43 +6,45 @@ export interface Workload {
   affinity: any;
   summary_set?: NestedSummary[];
   adjustment_set?: Adjustment[];
-  stats?: WorkloadStats;
+  pod_set?: NestedPod[];
 };
-
-export type WorkloadStats = {[containerName: string]: ContainerStats};
 
 export type WorkloadKind = 'ReplicaSet' | 'Deployment' | 'DaemonSet' | 'CronJob' | 'StatefulSet' | 'Job';
 
-export interface ContainerStats {
-  requests: ResourceRequest[];
-  usage: ResourceUsage[];
-  oom_events: OOMEvent[];
-  is_running?: boolean;
+export interface BasePod {
+  id: number;
+  uid: string;
+  name: string;
+  spec_hash: string;
+  started_at: Date;
+  gone_at: Date;
+  container_set: NestedContainer[];
 };
 
-export interface ResourceRequest {
-  since: Date;
-  till: Date|null;
+export interface NestedPod extends BasePod {
+};
+
+export interface BaseContainer {
+  id: number;
+  name: string;
+  runtime_id: string;
+  started_at: Date;
+  finished_at: Date;
   memory_limit_mi: number|null;
   cpu_request_m: number|null;
+  oomevent_set: NestedOOMEvent[];
+  resource_usage_buckets?: ResourceUsageBucket[];
 };
 
-export interface ResourceUsage {
-  measured_at: Date;
-  memory_mi: number;
-  cpu_m: number;
-  cpu_m_seconds: number;
+export interface NestedContainer extends BaseContainer {
 };
 
-export interface OOMEvent {
+export interface NestedOOMEvent {
   id: number;
   happened_at: Date;
-  container: number;
-  target_comm: string;
-  target_pid: number;
-  victim_comm: string;
-  victim_pid: number;
 };
+
+export type ResourceUsageBucket = [Date, number, number];  // ts, memory_mi, cpu_m
 
 export interface BaseSummary {
   container_name: string;
