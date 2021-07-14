@@ -1,12 +1,14 @@
 import React from 'react';
-import {BaseSummary, BaseSuggestion, BaseContainer} from 'types';
+import {Workload, BaseSummary, BaseSuggestion, BaseContainer} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
 import {last} from 'utils';
+import { useOOMEventMutation } from 'hooks';
 
 interface ContainerCardProps {
   name: string;
+  workload: Workload;
   containers?: BaseContainer[];
   summary: BaseSummary;
   suggestion?: BaseSuggestion;
@@ -38,7 +40,7 @@ export default function ContainerCard(props: ContainerCardProps) {
   let setNewMemLimit = props.onMemLimitChange ?? (() => null);
   let setNewCpuRequst = props.onCpuRequestChange ?? (() => null);
 
-  const importantOOM = React.useMemo(() => {
+  const lastOOM = React.useMemo(() => {
     if (!props.containers) {
       return null;
     }
@@ -46,14 +48,25 @@ export default function ContainerCard(props: ContainerCardProps) {
     if (containersWithOOM.length === 0) {
       return null;
     }
-    containersWithOOM.sort((a, b) => b.memory_limit_mi! - a.memory_limit_mi!);
+    containersWithOOM.sort((a, b) => a.memory_limit_mi! - b.memory_limit_mi!);
+    let c = last(containersWithOOM);
+    let oom = last(c.oomevent_set.filter(c => !c.is_ignored));
     return {
-      memory_limit_mi: last(containersWithOOM).memory_limit_mi,
-      happened_at: last(last(containersWithOOM).oomevent_set.filter(c => !c.is_ignored)).happened_at,
+      ...oom,
+      memory_limit_mi: c.memory_limit_mi,
     };
   }, [props.containers]);
 
   const hasUsage = !!props.containers?.[0]?.resource_usage_buckets;
+
+  const oomEventMutation = useOOMEventMutation(props.workload.id);
+  function ignoreLastOOM() {
+    if (!lastOOM) return;
+    oomEventMutation.mutate({
+      ...lastOOM,
+      is_ignored: true,
+    });
+  }
 
   return (
     <div className={styles.card}>
@@ -67,9 +80,10 @@ export default function ContainerCard(props: ContainerCardProps) {
             <div className={styles.summary}>
               {mem.max} {mem.limit !== null && <span className={styles.limit}>/ {mem.limit}</span>} Mi,
               mean: {mem.mean} Mi, stdDev: {mem.stdDev} Mi ({mem.stdDevPercent.toFixed(2)}%)
-              {importantOOM && (
+              {lastOOM && (
                 <div>
-                  OOM @ {importantOOM.happened_at.toLocaleString()}, {importantOOM.memory_limit_mi} Mi limit
+                  OOM @ {lastOOM.happened_at.toLocaleString()}, {lastOOM.memory_limit_mi} Mi limit
+                  {' '}<button className="link" onClick={ignoreLastOOM} disabled={oomEventMutation.isLoading}>ignore</button>
                 </div>
               )}
             </div>

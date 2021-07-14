@@ -39,11 +39,14 @@ export interface BaseContainer {
 export interface NestedContainer extends BaseContainer {
 };
 
-export interface NestedOOMEvent {
+export interface BaseOOMEvent {
   id: number;
   happened_at: Date;
   is_critical: boolean;
   is_ignored: boolean;
+};
+
+export interface NestedOOMEvent extends BaseOOMEvent {
 };
 
 export type ResourceUsageBucket = [Date, number, number];  // ts, memory_mi, cpu_m

@@ -1,4 +1,4 @@
-import { Workload, Suggestion, NewAdjustment, Adjustment } from 'types';
+import { Workload, Suggestion, NewAdjustment, Adjustment, BaseOOMEvent } from 'types';
 import {parseDate} from 'utils';
 
 export const baseUrl = 'http://localhost:8000/';
@@ -158,8 +158,16 @@ export async function mutateAdjustment(obj: NewAdjustment|Adjustment): Promise<A
   } else {
     r = request('adjustments/', 'POST', obj);
   }
-  return r.then(r => r.json()).then(adj => {
-    adj.scheduled_for = parseDate(adj.scheduled_for);
+  return r.then(r => r.json()).then((adj: Adjustment) => {
+    adj.scheduled_for = parseDate(adj.scheduled_for as any);
     return adj;
-  }) as Promise<Adjustment>;
+  });
+}
+
+export async function mutateOOMEvent(obj: BaseOOMEvent): Promise<BaseOOMEvent> {
+  let r = request(`oom-events/${obj.id}`, 'PUT', obj);
+  return r.then(r => r.json()).then(oom => {
+    oom.happened_at = parseDate(oom.happened_at as any);
+    return oom;
+  });
 }

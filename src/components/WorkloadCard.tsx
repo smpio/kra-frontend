@@ -87,6 +87,7 @@ export default function WorkloadCard(props: WorkloadCardProps) {
         <ContainerCard
           key={s.container_name}
           name={s.container_name}
+          workload={wl}
           containers={wl.pod_set?.flatMap(pod => pod.container_set.filter(c => c.name === s.container_name))}
           summary={s}
           suggestion={s.suggestion}

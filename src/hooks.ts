@@ -1,7 +1,7 @@
 import React from 'react';
 import * as d3 from 'd3';
 import * as API from 'api';
-import {useQuery, useMutation, UseQueryOptions, useQueryClient} from 'react-query';
+import {useQuery, useMutation, UseQueryOptions, useQueryClient, QueryClient} from 'react-query';
 import { Workload, D3RenderFunc } from 'types';
 import produce from 'immer';
 
@@ -39,11 +39,8 @@ export function useAdjustmentMutation() {
 
   return useMutation(API.mutateAdjustment, {
     onSuccess: adj => {
-      function updateWorkload(wl: Workload) {
-        if (!wl) {
-          return wl;
-        }
-        if (wl.id !== adj.workload || !wl.adjustment_set) {
+      updateWorkloadCache(queryClient, adj.workload, wl => {
+        if (!wl.adjustment_set) {
           return wl;
         }
         let idx = wl.adjustment_set.findIndex(a => a.id === adj.id);
@@ -53,15 +50,10 @@ export function useAdjustmentMutation() {
           });
         } else {
           return produce(wl, draft => {
-            if (draft.adjustment_set) {
-              draft.adjustment_set[idx] = adj;
-            }
+            draft.adjustment_set![idx] = adj;
           });
         }
-      }
-
-      queryClient.setQueriesData<Workload[]>('workloads', workloads => workloads!.map(updateWorkload));
-      queryClient.setQueriesData<Workload>(['workload', adj.workload], workload => updateWorkload(workload!));
+      });
 
       let refreshWorkloadAfter = adj.scheduled_for.getTime() - new Date().getTime() + 90000;
       setTimeout(() => {
@@ -69,4 +61,42 @@ export function useAdjustmentMutation() {
       }, refreshWorkloadAfter);
     }
   });
+}
+
+export function useOOMEventMutation(workloadId?: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation(API.mutateOOMEvent, {
+    onSuccess: oom => {
+      if (!workloadId) return;
+      updateWorkloadCache(queryClient, workloadId, wl => {
+        if (!wl.pod_set) {
+          return wl;
+        }
+        return produce(wl, draft => {
+          for (let pod of draft.pod_set!) {
+            for (let c of pod.container_set) {
+              let idx = c.oomevent_set.findIndex(o => o.id === oom.id);
+              if (idx !== -1) {
+                c.oomevent_set[idx] = oom;
+                return;
+              }
+            }
+          }
+        });
+      });
+    }
+  });
+}
+
+function updateWorkloadCache(queryClient: QueryClient, workloadId: number, updateFunc: (wl: Workload) => Workload) {
+  function updateWorkload(wl: Workload) {
+    if (!wl || wl.id !== workloadId) {
+      return wl;
+    }
+    return updateFunc(wl);
+  }
+
+  queryClient.setQueriesData<Workload[]>('workloads', workloads => workloads!.map(updateWorkload));
+  queryClient.setQueriesData<Workload>(['workload', workloadId], workload => updateWorkload(workload!));
 }
