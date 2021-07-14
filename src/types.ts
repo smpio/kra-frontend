@@ -42,6 +42,7 @@ export interface NestedContainer extends BaseContainer {
 export interface NestedOOMEvent {
   id: number;
   happened_at: Date;
+  is_critical: boolean;
 };
 
 export type ResourceUsageBucket = [Date, number, number];  // ts, memory_mi, cpu_m

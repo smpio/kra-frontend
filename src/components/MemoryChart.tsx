@@ -11,10 +11,15 @@ interface MemoryChartProps {
 export default function MemoryChart(props: MemoryChartProps) {
   const postRender: ChartRenderFunc = (svg, _, {x, y}) => {
     for (let oomEvent of props.containers.flatMap(c => c.oomevent_set)) {
+      let y0 = y.range()[0];
+      let y1 = y.range()[1];
+      if (!oomEvent.is_critical) {
+        y1 += 0.25 * (y0 - y1);
+      }
       svg.append('path')
         .datum([
-          [x(oomEvent.happened_at), y.range()[0]],
-          [x(oomEvent.happened_at), y.range()[1]],
+          [x(oomEvent.happened_at), y0],
+          [x(oomEvent.happened_at), y1],
         ] as [number,number][])
         .attr('fill', 'none')
         .attr('stroke', '#ff000088')
