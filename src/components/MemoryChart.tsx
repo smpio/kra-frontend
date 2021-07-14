@@ -13,8 +13,12 @@ export default function MemoryChart(props: MemoryChartProps) {
     for (let oomEvent of props.containers.flatMap(c => c.oomevent_set)) {
       let y0 = y.range()[0];
       let y1 = y.range()[1];
+      let color = '#ff0000bb';
       if (!oomEvent.is_critical) {
         y1 += 0.25 * (y0 - y1);
+      }
+      if (oomEvent.is_ignored) {
+        color = '#a048ffbb';
       }
       svg.append('path')
         .datum([
@@ -22,7 +26,7 @@ export default function MemoryChart(props: MemoryChartProps) {
           [x(oomEvent.happened_at), y1],
         ] as [number,number][])
         .attr('fill', 'none')
-        .attr('stroke', '#ff000088')
+        .attr('stroke', color)
         .attr('stroke-width', 1.5)
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')

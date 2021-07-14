@@ -43,6 +43,7 @@ export interface NestedOOMEvent {
   id: number;
   happened_at: Date;
   is_critical: boolean;
+  is_ignored: boolean;
 };
 
 export type ResourceUsageBucket = [Date, number, number];  // ts, memory_mi, cpu_m

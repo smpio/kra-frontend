@@ -41,14 +41,14 @@ export default function ContainerCard(props: ContainerCardProps) {
     if (!props.containers) {
       return null;
     }
-    var containersWithOOM = props.containers.filter(c => c.memory_limit_mi != null && c.oomevent_set.length > 0);
+    var containersWithOOM = props.containers.filter(c => c.memory_limit_mi != null && c.oomevent_set.filter(c => !c.is_ignored).length > 0);
     if (containersWithOOM.length === 0) {
       return null;
     }
     containersWithOOM.sort((a, b) => b.memory_limit_mi! - a.memory_limit_mi!);
     return {
       memory_limit_mi: containersWithOOM[0].memory_limit_mi,
-      happened_at: containersWithOOM[0].oomevent_set[0].happened_at,
+      happened_at: containersWithOOM[0].oomevent_set.filter(c => !c.is_ignored)[0].happened_at,
     };
   }, [props.containers]);
 
