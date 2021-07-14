@@ -3,6 +3,7 @@ import {BaseSummary, BaseSuggestion, BaseContainer} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
 import styles from './ContainerCard.module.css';
+import {last} from 'utils';
 
 interface ContainerCardProps {
   name: string;
@@ -47,8 +48,8 @@ export default function ContainerCard(props: ContainerCardProps) {
     }
     containersWithOOM.sort((a, b) => b.memory_limit_mi! - a.memory_limit_mi!);
     return {
-      memory_limit_mi: containersWithOOM[0].memory_limit_mi,
-      happened_at: containersWithOOM[0].oomevent_set.filter(c => !c.is_ignored)[0].happened_at,
+      memory_limit_mi: last(containersWithOOM).memory_limit_mi,
+      happened_at: last(last(containersWithOOM).oomevent_set.filter(c => !c.is_ignored)).happened_at,
     };
   }, [props.containers]);
 
