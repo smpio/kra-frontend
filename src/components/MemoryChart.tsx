@@ -6,6 +6,7 @@ import Chart from './Chart';
 interface MemoryChartProps {
   containers: BaseContainer[];
   className?: string;
+  onSelection?: (start: Date, end: Date) => void;
 };
 
 export default function MemoryChart(props: MemoryChartProps) {
@@ -41,5 +42,6 @@ export default function MemoryChart(props: MemoryChartProps) {
     requestValueProp="memory_limit_mi"
     yAxisLabel="Mi"
     postRender={postRender}
+    onSelection={props.onSelection}
     />;
 }

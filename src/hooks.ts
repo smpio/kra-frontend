@@ -14,9 +14,14 @@ export function useD3(renderFunc: D3RenderFunc, dependencies: React.DependencyLi
     let width = ref.current.clientWidth;
     let height = ref.current.clientHeight;
 
-    svg.selectChildren('*').remove();
-
-    renderFunc(svg, {width, height});
+    let g = svg.selectChild<SVGGElement>('g.d3');
+    if (g) {
+      g.selectChildren('*').remove();
+      renderFunc(g, {width, height});
+    } else {
+      svg.selectChildren('*').remove();
+      renderFunc(svg, {width, height});
+    }
   }, dependencies);  // eslint-disable-line react-hooks/exhaustive-deps
 
   return ref;

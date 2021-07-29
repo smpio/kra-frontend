@@ -91,10 +91,11 @@ export interface Suggestion extends BaseSuggestion {
 };
 
 export type D3GElement = d3.Selection<SVGGElement, unknown, null, undefined>;
+export type D3SVGElement = d3.Selection<SVGSVGElement, unknown, null, undefined>;
 
-export type D3RenderFunc = (svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, size: Size) => void;
+export type D3RenderFunc = (svg: D3GElement|D3SVGElement, size: Size) => void;
 
-export type ChartRenderFunc = (svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, size: Size, axes: {
+export type ChartRenderFunc = (svg: D3GElement|D3SVGElement, size: Size, axes: {
   x: d3.ScaleTime<number, number>,
   y: d3.ScaleLinear<number, number>,
 }) => void;

@@ -68,13 +68,17 @@ export default function ContainerCard(props: ContainerCardProps) {
     });
   }
 
+  function handleMemSelection(start: Date, end: Date) {
+    console.log(start, end);
+  }
+
   return (
     <div className={styles.card}>
       <h3><code>{props.name}</code></h3>
       <div className={styles.row}>
         <div>
           <div className={styles.chartContainer}>
-            {hasUsage && <MemoryChart containers={props.containers!} className={styles.chart} />}
+            {hasUsage && <MemoryChart containers={props.containers!} className={styles.chart} onSelection={handleMemSelection} />}
           </div>
           {mem && (
             <div className={styles.summary}>

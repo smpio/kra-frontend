@@ -12,17 +12,22 @@ interface ChartProps {
   yAxisLabel?: string;
   postRender?: ChartRenderFunc;
   className?: string;
+  onSelection?: (start: Date, end: Date) => void;
 };
 
 export default function Chart(props: ChartProps) {
+  const [chart, setChart] = React.useState<{xScale: d3.ScaleTime<number, number>}>();
+
   const ref = useD3((svg, {width, height}) => {
     if (!props.containers[0]?.resource_usage_buckets) return;
 
-    let margin = {top: 5, right: 5, bottom: 20, left: 40};
+    const margin = {top: 5, right: 5, bottom: 20, left: 40};
 
-    let x = d3.scaleTime()
+    const x = d3.scaleTime()
       .domain(d3.extent(props.containers.flatMap(c => c.resource_usage_buckets!), b => b[0]) as [Date, Date])
       .range([margin.left, width - margin.right]);
+
+    setChart({xScale: x});
 
     let requestPoints = [];
     for (let c of props.containers) {
@@ -132,7 +137,59 @@ export default function Chart(props: ChartProps) {
     }
   }, [props.containers, props.valueProp, props.requestValueProp, props.postRender]);
 
-  return <svg ref={ref} className={props.className} />;
+  const [isSelecting, setIsSelecting] = React.useState(false);
+  const [selectionStart, setSelectionStart] = React.useState<number>();
+  const [selectionEnd, setSelectionEnd] = React.useState<number>();
+
+  function handlePointerDown(e: React.PointerEvent) {
+    e.preventDefault();
+    setIsSelecting(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const x = e.clientX - e.currentTarget.getBoundingClientRect().left;
+    setSelectionStart(x);
+    setSelectionEnd(x);
+  }
+
+  function handlePointerMove(e: React.PointerEvent) {
+    if (isSelecting) {
+      setSelectionEnd(e.clientX - e.currentTarget.getBoundingClientRect().left);
+    }
+  }
+
+  function handlePointerUp(e: React.PointerEvent) {
+    e.preventDefault();
+    setIsSelecting(false);
+    setSelectionEnd(e.clientX - e.currentTarget.getBoundingClientRect().left);
+    if (chart !== undefined && props.onSelection !== undefined) {
+      let start = Math.min(selectionStart!, selectionEnd!);
+      let end = Math.max(selectionStart!, selectionEnd!);
+      props.onSelection(chart.xScale.invert(start), chart.xScale.invert(end));
+    }
+  }
+
+  let selectionX = 0, selectionWidth = 0;
+  if (selectionStart !== undefined && selectionEnd !== undefined) {
+    if (selectionEnd > selectionStart) {
+      selectionX = selectionStart;
+      selectionWidth = selectionEnd - selectionStart;
+    } else {
+      selectionX = selectionEnd;
+      selectionWidth = selectionStart - selectionEnd;
+    }
+  }
+
+  return (
+    <svg
+      ref={ref}
+      className={props.className}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      <g className="d3" />
+      {isSelecting && <rect className="selection" x={selectionX} y={0} width={selectionWidth} height="100%" />}
+    </svg>
+  );
 }
 
 let ALLOWED_INTERSECTION = 5 * 60 * 1000;
