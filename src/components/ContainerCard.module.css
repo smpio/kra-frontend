@@ -52,3 +52,33 @@
 .form input::-webkit-inner-spin-button {
   display: none;
 }
+
+.modal {
+  max-width: 500px;
+}
+
+.modal h2 {
+  border-bottom: 1px solid #ccc;
+  padding: 1rem;
+  margin: 0;
+}
+
+.modal .content {
+  padding: 1rem;
+  overflow: auto;
+}
+
+.modal .actions {
+  border-top: 1px solid #ccc;
+  background: #eee;
+  padding: 0.5rem 1rem;
+}
+
+.modal .actions button {
+  border: 0;
+  background-color: transparent;
+  color: rgb(0, 122, 255);
+  width: 100%;
+  font-size: 1.2rem;
+  line-height: 2;
+}

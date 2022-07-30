@@ -1,9 +1,10 @@
 import React from 'react';
-import {Workload, BaseSummary, BaseSuggestion, BaseContainer} from 'types';
+import {Workload, BaseSummary, BaseSuggestion, BaseContainer, BaseOOMEvent} from 'types';
 import MemoryChart from './MemoryChart';
 import CPUChart from './CPUChart';
+import BottomModal from './BottomModal';
 import styles from './ContainerCard.module.css';
-import {last} from 'utils';
+import {chain, last} from 'utils';
 import { useOOMEventMutation } from 'hooks';
 
 interface ContainerCardProps {
@@ -60,6 +61,7 @@ export default function ContainerCard(props: ContainerCardProps) {
   const hasUsage = !!props.containers?.[0]?.resource_usage_buckets;
 
   const oomEventMutation = useOOMEventMutation(props.workload.id);
+
   function ignoreLastOOM() {
     if (!lastOOM) return;
     oomEventMutation.mutate({
@@ -68,8 +70,20 @@ export default function ContainerCard(props: ContainerCardProps) {
     });
   }
 
+  const [selectionModalVisible, setSelectionModalVisible] = React.useState(false);
+  const [selectionInterval, setSelectionInterval] = React.useState<[Date, Date]>();
+  const [selectedOOMs, setSelectedOOMs] = React.useState<BaseOOMEvent[]>([]);
+
   function handleMemSelection(start: Date, end: Date) {
-    console.log(start, end);
+    setSelectionInterval([start, end]);
+    setSelectionModalVisible(true);
+    if (props.containers) {
+      setSelectedOOMs(
+        props.containers
+          .flatMap(c => c.oomevent_set)
+          .filter(oom => oom.happened_at >= start && oom.happened_at <= end)
+      );
+    }
   }
 
   return (
@@ -157,6 +171,18 @@ export default function ContainerCard(props: ContainerCardProps) {
           </div>
         </div>
       </div>
+
+      {selectionModalVisible && selectionInterval && (
+        <BottomModal className={styles.modal} onCancel={() => setSelectionModalVisible(false)}>
+          <h2>{selectionInterval[0].toLocaleString()} – <br/> {selectionInterval[1].toLocaleString()}</h2>
+          <div className={styles.content}>
+            There are {selectedOOMs.length} OOM events.
+          </div>
+          <div className={styles.actions}>
+            <button onClick={() => setSelectionModalVisible(false)}>Ignore OOM events</button>
+          </div>
+        </BottomModal>
+      )}
     </div>
   );
 }
